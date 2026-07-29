@@ -134,15 +134,15 @@ export const ALGORITHM_DATA = {
     ]
   },
   splay: {
-    name: "⭐ Splay-Baum (Zig / Zig-Zig Rotationen)",
+    name: "⭐ Splay-Baum (Galles USFCA Zig / Zig-Zig Rotationen)",
     category: "tree",
     isTestat: true,
     file: "SplayTree.java",
     code: [
       "public void splay(SplayNode<T> node) {",
-      "    while (node.getParent() != null) {",
-      "        if (node.getParent().getParent() == null) rotate(node); // Zig",
-      "        else if (isZigZig(node)) { rotate(parent); rotate(node); } // Zig-Zig",
+      "    while (node.parent != null) {",
+      "        if (node.parent.parent == null) rotate(node); // Zig",
+      "        else if (isZigZig(node)) { rotate(node.parent); rotate(node); } // Zig-Zig (Parent zuerst!)",
       "        else { rotate(node); rotate(node); } // Zig-Zag",
       "    }",
       "}"
@@ -426,6 +426,7 @@ export class TreeNode {
     this.val = val;
     this.left = null;
     this.right = null;
+    this.parent = null;
     this.color = color;
     this.height = 1;
     this.x = 0;
@@ -439,12 +440,13 @@ export function updateTreeHeights(node) {
   return node.height;
 }
 
-export function cloneTree(node) {
+export function cloneTree(node, parent = null) {
   if (!node) return null;
   const copy = new TreeNode(node.val, node.color);
   copy.height = node.height;
-  copy.left = cloneTree(node.left);
-  copy.right = cloneTree(node.right);
+  copy.parent = parent;
+  copy.left = cloneTree(node.left, copy);
+  copy.right = cloneTree(node.right, copy);
   return copy;
 }
 
@@ -481,7 +483,7 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
   } else if (algoKey === 'avl') {
     simulateAVLDetailedIncremental(data, steps);
   } else if (algoKey === 'splay') {
-    simulateSplayDetailedIncremental(data, steps);
+    simulateSplayDetailedIncrementalGalles(data, steps);
   } else if (algoKey === 'rbtree') {
     simulateRBDetailedIncremental(data, steps);
   } else if (algoKey === 'bst') {
@@ -505,9 +507,265 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
   return steps;
 }
 
-// FULL MULTI-STEP SIMULATIONS FOR ALL ALGORITHMS
+// -----------------------------------------------------------------------
+// GALLES USFCA REAL SPLAY TREE ENGINE (Zig, Zig-Zig, Zig-Zag Rotations)
+// -----------------------------------------------------------------------
+function simulateSplayDetailedIncrementalGalles(data, steps) {
+  const treeHolder = { root: null };
 
-// 1. InsertionSort Step-by-Step
+  steps.push({
+    type: 'tree',
+    root: null,
+    codeLine: 0,
+    log: `Starte inkrementellen Galles (USFCA) Splay-Baum Aufbau. Schlüssel: [${data.join(', ')}].`,
+    q: "Was ist das Hauptmerkmal eines Splay-Baums?",
+    a: "Jeder zugegriffene oder eingefügte Knoten wird über Splay-Rotationen (Zig, Zig-Zig, Zig-Zag) an die Wurzel gebracht."
+  });
+
+  data.forEach((val, idx) => {
+    steps.push({
+      type: 'tree',
+      root: cloneTree(treeHolder.root),
+      highlightNode: val,
+      codeLine: 1,
+      log: `📌 Inkrementeller Schritt ${idx + 1}/${data.length}: Füge Schlüssel ${val} ein...`,
+      q: "Wie unterscheidet sich SplayTree von AVLTree?",
+      a: "Splay-Bäume speichern KEINE Höheninformationen. Das Balancieren geschieht amortisiert durch Splaying des letzten Knotens an die Wurzel."
+    });
+
+    // 1. Standard BST Insert
+    const insertedNode = insertBSTWithParent(treeHolder, val);
+
+    steps.push({
+      type: 'tree',
+      root: cloneTree(treeHolder.root),
+      highlightNode: val,
+      codeLine: 2,
+      log: `🌱 Knoten ${val} im BST platziert. Starte Splay-Operation (splay node ${val} to root)...`,
+      q: "Welche 3 Rotationsmuster gibt es beim Splaying?",
+      a: "1. Zig (Single rotation bei der Wurzel), 2. Zig-Zig (Parent zuerst!), 3. Zig-Zag (Child zuerst)."
+    });
+
+    // 2. Splay to root (Galles / Tarjan-Sleator algorithm)
+    splayNodeToRootGalles(treeHolder, insertedNode, steps, val);
+
+    steps.push({
+      type: 'tree',
+      root: cloneTree(treeHolder.root),
+      highlightNode: val,
+      codeLine: 4,
+      log: `✅ Splaying beendet! Knoten ${val} steht jetzt als Wurzel an der Spitze des Baums.`,
+      q: "Welche amortisierte Laufzeit haben Splay-Operationen?",
+      a: "Amortisiert O(log n) für Einfügen, Suchen und Löschen."
+    });
+  });
+}
+
+function insertBSTWithParent(treeHolder, val) {
+  const newNode = new TreeNode(val);
+  if (!treeHolder.root) {
+    treeHolder.root = newNode;
+    return newNode;
+  }
+
+  let curr = treeHolder.root;
+  let p = null;
+  while (curr) {
+    p = curr;
+    if (val < curr.val) curr = curr.left;
+    else if (val > curr.val) curr = curr.right;
+    else return curr; // Duplicate
+  }
+
+  newNode.parent = p;
+  if (val < p.val) p.left = newNode;
+  else p.right = newNode;
+
+  updateTreeHeights(treeHolder.root);
+  return newNode;
+}
+
+// True Galles / Tarjan-Sleator Splay Algorithm
+function splayNodeToRootGalles(treeHolder, x, steps, targetVal) {
+  while (x.parent !== null) {
+    const p = x.parent;
+    const g = p.parent;
+
+    if (g === null) {
+      // 1. ZIG CASE (x is child of root p)
+      if (x === p.left) {
+        rotateRightSplay(treeHolder, p);
+      } else {
+        rotateLeftSplay(treeHolder, p);
+      }
+      updateTreeHeights(treeHolder.root);
+      steps.push({
+        type: 'tree',
+        root: cloneTree(treeHolder.root),
+        highlightNode: targetVal,
+        rotationType: 'ZIG',
+        codeLine: 2,
+        log: `🔄 ZIG-ROTATION (Einzel-Rotation): Knoten ${x.val} ist direktes Kind der Wurzel ${p.val}. Rotiere ${x.val} an die Wurzel!`,
+        q: "Wann wird ein ZIG-Schritt ausgeführt?",
+        a: "Genau dann, wenn der zu splayende Knoten das direkte Kind der Wurzel ist (Parent hat keinen Grandparent)."
+      });
+    } else if ((x === p.left && p === g.left) || (x === p.right && p === g.right)) {
+      // 2. ZIG-ZIG CASE (Same direction: both left or both right)
+      // GALLES RULE: Rotate Parent p around Grandparent g FIRST, then rotate x around p!
+      if (x === p.left) {
+        rotateRightSplay(treeHolder, g);
+        updateTreeHeights(treeHolder.root);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'ZIG_ZIG',
+          codeLine: 3,
+          log: `🔄 ZIG-ZIG (Teil 1/2): Rotiere Elternknoten ${p.val} um Großelternknoten ${g.val} nach RECHTS!`,
+          q: "Was unterscheidet Zig-Zig in Splay-Bäumen von AVL-Doppelrotationen?",
+          a: "In Zig-Zig (Splay) wird ZUERST der Elternknoten um den Großelternknoten rotiert (Galles / Tarjan Invariante)!"
+        });
+
+        rotateRightSplay(treeHolder, p);
+        updateTreeHeights(treeHolder.root);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'ZIG_ZIG',
+          codeLine: 3,
+          log: `🔄 ZIG-ZIG (Teil 2/2): Rotiere Zielknoten ${x.val} um ${p.val} nach RECHTS an die Spitze!`,
+          q: "Warum ist die Zig-Zig Reihenfolge entscheidend?",
+          a: "Weil nur durch das Rotieren des Elternknotens zuerst die Pfadlänge des gesamten Baums halbiert wird!"
+        });
+      } else {
+        rotateLeftSplay(treeHolder, g);
+        updateTreeHeights(treeHolder.root);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'ZIG_ZIG',
+          codeLine: 3,
+          log: `🔄 ZIG-ZIG (Teil 1/2): Rotiere Elternknoten ${p.val} um Großelternknoten ${g.val} nach LINKS!`,
+          q: "Was ist der Vorteil von Zig-Zig?",
+          a: "Es halbiert die Tiefe aller Knoten entlang des Splay-Pfades (Pfadhalbierung)."
+        });
+
+        rotateLeftSplay(treeHolder, p);
+        updateTreeHeights(treeHolder.root);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'ZIG_ZIG',
+          codeLine: 3,
+          log: `🔄 ZIG-ZIG (Teil 2/2): Rotiere Zielknoten ${x.val} um ${p.val} nach LINKS an die Spitze!`,
+          q: "Wie nennt man Zig-Zig noch?",
+          a: "Doppelrotation in dieselbe Richtung."
+        });
+      }
+    } else {
+      // 3. ZIG-ZAG CASE (Opposite direction: x left child of p, p right child of g OR vice versa)
+      // GALLES RULE: Rotate x around p FIRST, then rotate x around g!
+      if (x === p.left) {
+        rotateRightSplay(treeHolder, p);
+        updateTreeHeights(treeHolder.root);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'ZIG_ZAG',
+          codeLine: 3,
+          log: `🔄 ZIG-ZAG (Teil 1/2): Rotiere Zielknoten ${x.val} um Elternknoten ${p.val} nach RECHTS!`,
+          q: "Wann tritt ein Zig-Zag Fall auf?",
+          a: "Wenn der Zielknoten ein Zick-Zack Muster mit seinen Ahnen bildet (z.B. rechtes Kind eines linken Kindes)."
+        });
+
+        rotateLeftSplay(treeHolder, g);
+        updateTreeHeights(treeHolder.root);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'ZIG_ZAG',
+          codeLine: 3,
+          log: `🔄 ZIG-ZAG (Teil 2/2): Rotiere Zielknoten ${x.val} um Großelternknoten ${g.val} nach LINKS!`,
+          q: "Wie verhält sich Zig-Zag im Vergleich zu AVL Doppelrotationen?",
+          a: "Zig-Zag entspricht exakt der Doppelrotation aus AVL-Bäumen."
+        });
+      } else {
+        rotateLeftSplay(treeHolder, p);
+        updateTreeHeights(treeHolder.root);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'ZIG_ZAG',
+          codeLine: 3,
+          log: `🔄 ZIG-ZAG (Teil 1/2): Rotiere Zielknoten ${x.val} um Elternknoten ${p.val} nach LINKS!`,
+          q: "Was bewirkt Teil 1 des Zig-Zag?",
+          a: "Es bringt den Knoten in eine gerade Ausrichtung für die zweite Rotation."
+        });
+
+        rotateRightSplay(treeHolder, g);
+        updateTreeHeights(treeHolder.root);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'ZIG_ZAG',
+          codeLine: 3,
+          log: `🔄 ZIG-ZAG (Teil 2/2): Rotiere Zielknoten ${x.val} um Großelternknoten ${g.val} nach RECHTS!`,
+          q: "Was erreicht das Splaying am Ende?",
+          a: "Der zugegriffene Knoten steht garantiert als Wurzel an der Spitze des Baums!"
+        });
+      }
+    }
+  }
+}
+
+function rotateRightSplay(treeHolder, y) {
+  const x = y.left;
+  if (!x) return;
+  y.left = x.right;
+  if (x.right) x.right.parent = y;
+
+  x.parent = y.parent;
+  if (y.parent === null) {
+    treeHolder.root = x;
+  } else if (y === y.parent.right) {
+    y.parent.right = x;
+  } else {
+    y.parent.left = x;
+  }
+
+  x.right = y;
+  y.parent = x;
+}
+
+function rotateLeftSplay(treeHolder, x) {
+  const y = x.right;
+  if (!y) return;
+  x.right = y.left;
+  if (y.left) y.left.parent = x;
+
+  y.parent = x.parent;
+  if (x.parent === null) {
+    treeHolder.root = y;
+  } else if (x === x.parent.left) {
+    x.parent.left = y;
+  } else {
+    x.parent.right = y;
+  }
+
+  y.left = x;
+  x.parent = y;
+}
+
+// -----------------------------------------------------------------------
+// OTHER ALGORITHMS SIMULATIONS
+// -----------------------------------------------------------------------
 function simulateInsertionSortDetailed(arr, steps) {
   steps.push({
     type: 'array',
@@ -570,7 +828,6 @@ function simulateInsertionSortDetailed(arr, steps) {
   });
 }
 
-// 2. HeapSort Step-by-Step
 function simulateHeapSortDetailed(arr, steps) {
   steps.push({
     type: 'array',
@@ -582,7 +839,6 @@ function simulateHeapSortDetailed(arr, steps) {
     a: "O(n) Zeitkomplexität (nicht O(n log n)!)."
   });
 
-  // Simple step simulation of HeapSort
   for (let i = Math.floor(arr.length / 2) - 1; i >= 0; i--) {
     steps.push({
       type: 'array',
@@ -619,7 +875,6 @@ function simulateHeapSortDetailed(arr, steps) {
   });
 }
 
-// 3. CountingSort Step-by-Step
 function simulateCountingSortDetailed(arr, steps) {
   steps.push({
     type: 'array',
@@ -657,7 +912,6 @@ function simulateCountingSortDetailed(arr, steps) {
   });
 }
 
-// 4. BST Step-by-Step
 function simulateBSTDetailedIncremental(data, steps) {
   let root = null;
   steps.push({ type: 'tree', root: null, codeLine: 0, log: `Starte inkrementellen Aufbau des Binären Suchbaums (BST).` });
@@ -676,7 +930,6 @@ function simulateBSTDetailedIncremental(data, steps) {
   });
 }
 
-// 5. Heap Step-by-Step
 function simulateHeapDetailedIncremental(data, steps) {
   let root = null;
   steps.push({ type: 'tree', root: null, codeLine: 0, log: `Starte inkrementelles Einfügen in den Max-Heap (PriorityQueue).` });
@@ -695,7 +948,6 @@ function simulateHeapDetailedIncremental(data, steps) {
   });
 }
 
-// 6. Prim MST Step-by-Step
 function simulatePrimDetailed(graphData, steps, startNode = 'A') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = graphData.edges || [];
@@ -755,7 +1007,6 @@ function simulatePrimDetailed(graphData, steps, startNode = 'A') {
   });
 }
 
-// 7. BFS Step-by-Step
 function simulateBFSDetailed(graphData, steps, startNode = 'A') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = graphData.edges || [];
@@ -828,7 +1079,6 @@ function simulateBFSDetailed(graphData, steps, startNode = 'A') {
   });
 }
 
-// 8. DFS Step-by-Step
 function simulateDFSDetailed(graphData, steps, startNode = 'A') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = graphData.edges || [];
@@ -900,7 +1150,6 @@ function simulateDFSDetailed(graphData, steps, startNode = 'A') {
   });
 }
 
-// HYBRID SORT SIMULATION
 function simulateHybridSortDetailed(arr, left, right, depth, k, steps) {
   if (left >= right) return;
 
@@ -1326,41 +1575,6 @@ function rotateLeft(x) {
   updateTreeHeights(x);
   updateTreeHeights(y);
   return y;
-}
-
-function simulateSplayDetailedIncremental(data, steps) {
-  let root = null;
-  data.forEach((val, idx) => {
-    steps.push({
-      type: 'tree',
-      root: cloneTree(root),
-      highlightNode: val,
-      codeLine: 1,
-      log: `📌 Inkrementelles Splaying (${idx + 1}/${data.length}): Füge Schlüssel ${val} ein und splaye an die Wurzel...`,
-      q: "Wie unterscheidet sich SplayTree von AVLTree?",
-      a: "SplayTree speichert keine Höheninformationen. Er bringt zugegriffene Elemente per Splay-Operation an die Wurzel."
-    });
-    root = insertBST(root, val);
-    steps.push({
-      type: 'tree',
-      root: cloneTree(root),
-      highlightNode: val,
-      rotationType: 'ZIG_ZIG',
-      codeLine: 2,
-      log: `🔄 Splay-Operation (Zig/Zig-Zig): Rotation bringt den Knoten ${val} schrittweise nach oben.`,
-      q: "Welche Rotationen gibt es beim Splaying?",
-      a: "Zig (Einzelrotation), Zig-Zig (Doppelrotation in selbe Richtung), Zig-Zag (Doppelrotation in entgegengesetzte Richtung)."
-    });
-  });
-
-  steps.push({
-    type: 'tree',
-    root: cloneTree(root),
-    codeLine: 4,
-    log: `🎉 Splay-Baum inkrementell aufgebaut! Zuletzt zugegriffener Knoten steht an der Wurzel.`,
-    q: "Warum verwendet man Splay-Bäume?",
-    a: "Wegen des Lokalitätsprinzips: Vor kurzem verwendete Knoten sind extrem schnell erneut erreichbar O(1)."
-  });
 }
 
 function insertBST(node, val) {
