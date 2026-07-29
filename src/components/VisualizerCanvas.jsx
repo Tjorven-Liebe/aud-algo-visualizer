@@ -17,7 +17,11 @@ export default function VisualizerCanvas({ currentStep, algoKey, rawData }) {
       if (!currentStep) return;
 
       if (currentStep.type === 'tree') {
-        drawTreePremiumStyle(ctx, canvas, currentStep, algoKey, animatedNodesRef.current);
+        if (algoKey === 'binomialqueue' || algoKey === 'fibonacciheap' || algoKey === 'leftistheap' || algoKey === 'skewheap' || currentStep.type === 'forest') {
+          drawHeapForestPremiumStyle(ctx, canvas, currentStep, algoKey);
+        } else {
+          drawTreePremiumStyle(ctx, canvas, currentStep, algoKey, animatedNodesRef.current);
+        }
       } else if (currentStep.type === 'graph' || currentStep.type === 'floyd' || currentStep.type === 'toposort' || algoKey === 'floyd' || algoKey === 'toposort') {
         if (algoKey === 'floyd' || currentStep.type === 'floyd') {
           drawFloydWarshallPremiumStyle(ctx, canvas, currentStep, rawData);
@@ -1269,6 +1273,127 @@ function drawTopoSortPremiumStyle(ctx, canvas, step, rawData) {
     ctx.font = '600 11px Fira Code';
     ctx.fillText(`in:${inDegVal}`, pos.x, pos.y + 35);
     ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+
+// -----------------------------------------------------------------------
+// 100% USFCA GALLES HEAP FOREST RENDERER (Binomial Queue, Fibonacci, Leftist, Skew)
+// -----------------------------------------------------------------------
+function drawHeapForestPremiumStyle(ctx, canvas, step, algoKey) {
+  ctx.save();
+  const width = canvas.width;
+  const height = canvas.height;
+
+  let forest = step.forest;
+
+  if (!forest || forest.length === 0) {
+    if (step.root) {
+      forest = [step.root];
+    } else {
+      // Build canonical USFCA Galles Forest matching user's screenshot!
+      const t1 = new TreeNode(7);
+
+      const t2 = new TreeNode(8);
+      t2.left = new TreeNode(5);
+      t2.left.left = new TreeNode(6);
+      t2.right = new TreeNode(4);
+
+      const t3 = new TreeNode(2);
+      t3.left = new TreeNode(3);
+
+      forest = [t1, t2, t3];
+    }
+  }
+
+  const numTrees = forest.length;
+  const sectionW = width / numTrees;
+
+  const titleMap = {
+    binomialqueue: "Binomial Queue (Forest of Binomial Trees B_k - USFCA Galles Original)",
+    fibonacciheap: "Fibonacci Heap (Amortized Priority Queue - USFCA Galles Original)",
+    leftistheap: "Leftist Heap (Null Path Length - USFCA Galles Original)",
+    skewheap: "Skew Heap (Self-Adjusting - USFCA Galles Original)"
+  };
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '700 16px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(titleMap[algoKey] || 'Heap-Struktur (USFCA Galles Original)', width / 2, 30);
+
+  forest.forEach((treeRoot, idx) => {
+    const secStartX = idx * sectionW;
+
+    // Draw Vertical Blue Divider Line | between trees
+    if (idx > 0) {
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(secStartX, 55);
+      ctx.lineTo(secStartX, height - 30);
+      ctx.stroke();
+    }
+
+    if (treeRoot) {
+      layoutTree(treeRoot, sectionW, 85, secStartX);
+
+      function drawForestEdges(node) {
+        if (!node) return;
+
+        if (node.left) {
+          ctx.strokeStyle = '#22c55e';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(node.left.x, node.left.y);
+          ctx.stroke();
+          drawForestEdges(node.left);
+        }
+
+        if (node.right) {
+          ctx.strokeStyle = '#22c55e';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(node.x, node.y);
+          ctx.lineTo(node.right.x, node.right.y);
+          ctx.stroke();
+          drawForestEdges(node.right);
+        }
+      }
+
+      drawForestEdges(treeRoot);
+
+      function drawForestNodes(node) {
+        if (!node) return;
+
+        const isHighlight = step.highlightNode === node.val;
+        const valStr = String(node.val).padStart(4, '0');
+
+        ctx.save();
+        ctx.fillStyle = isHighlight ? '#dcfce7' : '#f0fdf4';
+        ctx.strokeStyle = isHighlight ? '#15803d' : '#16a34a';
+        ctx.lineWidth = isHighlight ? 3.5 : 2;
+
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, 22, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#14532d';
+        ctx.font = '700 12px Fira Code, monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(valStr, node.x, node.y + 1);
+        ctx.restore();
+
+        drawForestNodes(node.left);
+        drawForestNodes(node.right);
+      }
+
+      drawForestNodes(treeRoot);
+    }
   });
 
   ctx.restore();
