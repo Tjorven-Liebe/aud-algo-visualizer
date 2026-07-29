@@ -149,7 +149,7 @@ export const ALGORITHM_DATA = {
     ]
   },
   rbtree: {
-    name: "⭐ Rot-Schwarz-Baum (4 Regeln & Farben)",
+    name: "⭐ Rot-Schwarz-Baum (CLRS Kap. 13 & 4 Regeln)",
     category: "tree",
     isTestat: true,
     file: "RBTreeChecker.java",
@@ -389,7 +389,7 @@ export function generateAdvancedExamData(category, algoKey) {
     if (algoKey === 'avl') {
       return [50, 20, 80, 10, 35, 28, 38, 70, 90, 65, 68];
     } else if (algoKey === 'splay') {
-      return [10, 20, 30, 40, 50, 60, 35, 25];
+      return [10, 60, 20, 40, 30, 50];
     } else {
       return [60, 30, 80, 15, 45, 70, 90, 20, 40, 35];
     }
@@ -486,7 +486,7 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
   } else if (algoKey === 'splay') {
     simulateSplayDetailedIncrementalGalles(data, steps);
   } else if (algoKey === 'rbtree') {
-    simulateRBDetailedIncremental(data, steps);
+    simulateRBDetailedIncrementalCLRS(data, steps);
   } else if (algoKey === 'bst') {
     simulateBSTDetailedIncremental(data, steps);
   } else if (algoKey === 'heap') {
@@ -506,6 +506,236 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
   }
 
   return steps;
+}
+
+// -----------------------------------------------------------------------
+// CLRS & GALLES REAL RED-BLACK TREE ENGINE (4 Rules, Case 1, Case 2, Case 3)
+// -----------------------------------------------------------------------
+function simulateRBDetailedIncrementalCLRS(data, steps) {
+  const treeHolder = { root: null };
+
+  steps.push({
+    type: 'tree',
+    root: null,
+    codeLine: 0,
+    log: `Starte inkrementellen Rot-Schwarz-Baum Aufbau (CLRS Kap. 13 & Galles USFCA). Schlüssel: [${data.join(', ')}].`,
+    q: "Welche 4 Regeln definieren einen Rot-Schwarz-Baum?",
+    a: "Regel 1: Knoten ROT/SCHWARZ, Regel 2: Wurzel SCHWARZ, Regel 3: Keine zwei roten Knoten nacheinander, Regel 4: Gleiche Schwarzhöhe auf allen Pfaden."
+  });
+
+  data.forEach((val, idx) => {
+    steps.push({
+      type: 'tree',
+      root: cloneTree(treeHolder.root),
+      highlightNode: val,
+      codeLine: 1,
+      log: `📌 Inkrementeller Schritt ${idx + 1}/${data.length}: Füge Schlüssel ${val} als ROTEN Knoten ein...`,
+      q: "Warum werden neu eingefügte Knoten in Rot-Schwarz-Bäumen immer als ROT markiert?",
+      a: "Um Regel 4 (Schwarzhöhe) niemals zu verletzen. Stattdessen wird evtl. Regel 3 (keine 2 roten Knoten nacheinander) korrigiert."
+    });
+
+    const newNode = insertRBNode(treeHolder, val);
+
+    steps.push({
+      type: 'tree',
+      root: cloneTree(treeHolder.root),
+      highlightNode: val,
+      codeLine: 2,
+      log: `🌱 Roter Knoten ${val} eingefügt. Prüfe Rot-Schwarz-Invariante (RB-Insert-Fixup)...`,
+      q: "Wann tritt bei RB-Insert ein Konflikt auf?",
+      a: "Wenn der Elternknoten ebenfalls ROT ist (Rot-Rot-Konflikt verletzt Regel 3)."
+    });
+
+    fixupRBInsertCLRS(treeHolder, newNode, steps, val);
+
+    // Rule 2: Ensure root is BLACK
+    if (treeHolder.root) treeHolder.root.color = 'BLACK';
+
+    steps.push({
+      type: 'tree',
+      root: cloneTree(treeHolder.root),
+      highlightNode: val,
+      codeLine: 4,
+      log: `✅ Knoten ${val} integriert. Wurzel ist SCHWARZ. Alle 4 Rot-Schwarz-Regeln sind erfüllt!`,
+      q: "Welche maximale Höhe garantiert ein Rot-Schwarz-Baum?",
+      a: "Höhe h <= 2 · log2(n + 1). Laufzeit aller Operationen: O(log n)."
+    });
+  });
+}
+
+function insertRBNode(treeHolder, val) {
+  const node = new TreeNode(val, 'RED');
+  if (!treeHolder.root) {
+    node.color = 'BLACK';
+    treeHolder.root = node;
+    return node;
+  }
+
+  let curr = treeHolder.root;
+  let p = null;
+  while (curr) {
+    p = curr;
+    if (val < curr.val) curr = curr.left;
+    else if (val > curr.val) curr = curr.right;
+    else return curr;
+  }
+
+  node.parent = p;
+  if (val < p.val) p.left = node;
+  else p.right = node;
+
+  return node;
+}
+
+function fixupRBInsertCLRS(treeHolder, z, steps, targetVal) {
+  while (z.parent && z.parent.color === 'RED') {
+    const p = z.parent;
+    const g = p.parent;
+    if (!g) break;
+
+    if (p === g.left) {
+      const u = g.right; // Uncle
+      if (u && u.color === 'RED') {
+        // CASE 1: Uncle is RED -> Recolor Parent & Uncle to BLACK, Grandparent to RED
+        p.color = 'BLACK';
+        u.color = 'BLACK';
+        g.color = 'RED';
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          codeLine: 2,
+          log: `🎨 FALL 1 (Uncle ${u.val} ist ROT): Umfärben! Parent ${p.val} & Uncle ${u.val} ➔ SCHWARZ, Grandparent ${g.val} ➔ ROT.`,
+          q: "Was charakterisiert Fall 1 im RB-Tree Insert Fixup?",
+          a: "Der Onkel (Uncle) ist ROT. Der Konflikt wird durch Umfärben von Parent & Uncle nach SCHWARZ und Grandparent nach ROT gelöst."
+        });
+        z = g;
+      } else {
+        if (z === p.right) {
+          // CASE 2: Uncle is BLACK & z is right child (Triangle) -> Left rotate parent
+          z = p;
+          rotateLeftRB(treeHolder, z);
+          steps.push({
+            type: 'tree',
+            root: cloneTree(treeHolder.root),
+            highlightNode: targetVal,
+            rotationType: 'LEFT_ROTATE',
+            rotationPivot: z.val,
+            codeLine: 3,
+            log: `🔄 FALL 2 (Zick-Zack Dreieck): Links-Rotation um ${z.val}, um den Fall in ein kurviges Dreieck zu verwandeln.`,
+            q: "Was bewirkt Fall 2?",
+            a: "Es wandelt ein Zick-Zack Muster (inneres Kind) durch Rotation in ein einfaches Geradenmuster (Fall 3) um."
+          });
+        }
+        // CASE 3: Uncle is BLACK & z is left child (Line) -> Recolor & Right rotate grandparent
+        z.parent.color = 'BLACK';
+        g.color = 'RED';
+        rotateRightRB(treeHolder, g);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'RIGHT_ROTATE',
+          rotationPivot: g.val,
+          codeLine: 3,
+          log: `🔄 FALL 3 (Gerade Linie): Umfärben (Parent ➔ SCHWARZ, Grandparent ➔ ROT) & Rechts-Rotation um Grandparent ${g.val}!`,
+          q: "Was bewirkt Fall 3?",
+          a: "Es löst den Rot-Rot Konflikt endgültig auf durch Umfärben und Rotation um den Großelternknoten."
+        });
+      }
+    } else {
+      // Mirror case (Parent is right child of Grandparent)
+      const u = g.left; // Uncle
+      if (u && u.color === 'RED') {
+        // CASE 1: Uncle is RED
+        p.color = 'BLACK';
+        u.color = 'BLACK';
+        g.color = 'RED';
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          codeLine: 2,
+          log: `🎨 FALL 1 (Spiegelung, Uncle ${u.val} ist ROT): Parent ${p.val} & Uncle ${u.val} ➔ SCHWARZ, Grandparent ${g.val} ➔ ROT.`,
+          q: "Was passiert in Fall 1 der Spiegelung?",
+          a: "Parent & Onkel werden schwarz gefärbt, Großelternknoten wird rot."
+        });
+        z = g;
+      } else {
+        if (z === p.left) {
+          // CASE 2: Triangle
+          z = p;
+          rotateRightRB(treeHolder, z);
+          steps.push({
+            type: 'tree',
+            root: cloneTree(treeHolder.root),
+            highlightNode: targetVal,
+            rotationType: 'RIGHT_ROTATE',
+            rotationPivot: z.val,
+            codeLine: 3,
+            log: `🔄 FALL 2 (Spiegelung Dreieck): Rechts-Rotation um ${z.val}.`,
+            q: "Was macht Fall 2 bei Spiegelung?",
+            a: "Rotiert den inneren Knoten nach außen für Fall 3."
+          });
+        }
+        // CASE 3: Line
+        z.parent.color = 'BLACK';
+        g.color = 'RED';
+        rotateLeftRB(treeHolder, g);
+        steps.push({
+          type: 'tree',
+          root: cloneTree(treeHolder.root),
+          highlightNode: targetVal,
+          rotationType: 'LEFT_ROTATE',
+          rotationPivot: g.val,
+          codeLine: 3,
+          log: `🔄 FALL 3 (Spiegelung Linie): Umfärben & Links-Rotation um Grandparent ${g.val}!`,
+          q: "Wie wird Fall 3 im RB-Baum abgeschlossen?",
+          a: "Mit einer finale Links-Rotation um den Großvater und Umfärben der Knoten."
+        });
+      }
+    }
+  }
+
+  if (treeHolder.root) treeHolder.root.color = 'BLACK';
+}
+
+function rotateRightRB(treeHolder, y) {
+  const x = y.left;
+  if (!x) return;
+  y.left = x.right;
+  if (x.right) x.right.parent = y;
+
+  x.parent = y.parent;
+  if (y.parent === null) {
+    treeHolder.root = x;
+  } else if (y === y.parent.right) {
+    y.parent.right = x;
+  } else {
+    y.parent.left = x;
+  }
+
+  x.right = y;
+  y.parent = x;
+}
+
+function rotateLeftRB(treeHolder, x) {
+  const y = x.right;
+  if (!y) return;
+  x.right = y.left;
+  if (y.left) y.left.parent = x;
+
+  y.parent = x.parent;
+  if (x.parent === null) {
+    treeHolder.root = y;
+  } else if (x === x.parent.left) {
+    x.parent.left = y;
+  } else {
+    x.parent.right = y;
+  }
+
+  y.left = x;
+  x.parent = y;
 }
 
 // -----------------------------------------------------------------------
@@ -534,7 +764,6 @@ function simulateSplayDetailedIncrementalGalles(data, steps) {
       a: "Splay-Bäume speichern KEINE Höheninformationen. Das Balancieren geschieht amortisiert durch Splaying des letzten Knotens an die Wurzel."
     });
 
-    // 1. Standard BST Insert
     const insertedNode = insertBSTWithParent(treeHolder, val);
 
     steps.push({
@@ -547,7 +776,6 @@ function simulateSplayDetailedIncrementalGalles(data, steps) {
       a: "1. Zig (Single rotation bei der Wurzel), 2. Zig-Zig (Parent zuerst!), 3. Zig-Zag (Child zuerst)."
     });
 
-    // 2. Splay to root (Galles / Tarjan-Sleator algorithm)
     splayNodeToRootGalles(treeHolder, insertedNode, steps, val);
 
     steps.push({
@@ -575,7 +803,7 @@ function insertBSTWithParent(treeHolder, val) {
     p = curr;
     if (val < curr.val) curr = curr.left;
     else if (val > curr.val) curr = curr.right;
-    else return curr; // Duplicate
+    else return curr;
   }
 
   newNode.parent = p;
@@ -586,14 +814,12 @@ function insertBSTWithParent(treeHolder, val) {
   return newNode;
 }
 
-// True Galles / Tarjan-Sleator Splay Algorithm
 function splayNodeToRootGalles(treeHolder, x, steps, targetVal) {
   while (x.parent !== null) {
     const p = x.parent;
     const g = p.parent;
 
     if (g === null) {
-      // 1. ZIG CASE (x is child of root p)
       if (x === p.left) {
         rotateRightSplay(treeHolder, p);
       } else {
@@ -611,8 +837,6 @@ function splayNodeToRootGalles(treeHolder, x, steps, targetVal) {
         a: "Genau dann, wenn der zu splayende Knoten das direkte Kind der Wurzel ist (Parent hat keinen Grandparent)."
       });
     } else if ((x === p.left && p === g.left) || (x === p.right && p === g.right)) {
-      // 2. ZIG-ZIG CASE (Same direction: both left or both right)
-      // GALLES RULE: Rotate Parent p around Grandparent g FIRST, then rotate x around p!
       if (x === p.left) {
         rotateRightSplay(treeHolder, g);
         updateTreeHeights(treeHolder.root);
@@ -667,8 +891,6 @@ function splayNodeToRootGalles(treeHolder, x, steps, targetVal) {
         });
       }
     } else {
-      // 3. ZIG-ZAG CASE (Opposite direction: x left child of p, p right child of g OR vice versa)
-      // GALLES RULE: Rotate x around p FIRST, then rotate x around g!
       if (x === p.left) {
         rotateRightSplay(treeHolder, p);
         updateTreeHeights(treeHolder.root);
@@ -1584,46 +1806,6 @@ function insertBST(node, val) {
   else if (val > node.val) node.right = insertBST(node.right, val);
   updateTreeHeights(node);
   return node;
-}
-
-function simulateRBDetailedIncremental(data, steps) {
-  const root = new TreeNode(40, 'BLACK');
-  root.left = new TreeNode(20, 'RED');
-  root.right = new TreeNode(60, 'BLACK');
-  root.left.left = new TreeNode(10, 'BLACK');
-  root.left.right = new TreeNode(30, 'BLACK');
-
-  steps.push({
-    type: 'tree',
-    root: cloneTree(root),
-    codeLine: 0,
-    log: "Rot-Schwarz-Baum Ausgangszustand vor dem inkrementellen Einfügen.",
-    q: "Nennen Sie Regel 1 und Regel 2 von Rot-Schwarz-Bäumen!",
-    a: "Regel 1: Jeder Knoten ist ROT oder SCHWARZ. Regel 2: Die Wurzel ist SCHWARZ."
-  });
-
-  const val = data[0] || 25;
-  root.left.right.left = new TreeNode(val, 'RED');
-
-  steps.push({
-    type: 'tree',
-    root: cloneTree(root),
-    highlightNode: val,
-    codeLine: 2,
-    log: `🌱 Füge Schlüssel ${val} als ROTEN Knoten ein. Prüfe Regel 3 (keine zwei roten Knoten aufeinander).`,
-    q: "Welche Farbe haben neu eingefügte Knoten immer zuerst?",
-    a: "Neu eingefügte Knoten sind immer ROT, um Regel 4 (gleiche Schwarzhöhe) nicht zu verletzen."
-  });
-
-  steps.push({
-    type: 'tree',
-    root: cloneTree(root),
-    highlightNode: val,
-    codeLine: 3,
-    log: `✅ Vaterknoten ist SCHWARZ ➔ Kein Rot-Rot-Konflikt! Alle 4 Regeln des Rot-Schwarz-Baums sind erfüllt.`,
-    q: "Was ist Regel 4?",
-    a: "Jeder einfache Pfad von einem Knoten zu einem Blatt enthält die gleiche Anzahl schwarzer Knoten (Schwarzhöhe)."
-  });
 }
 
 function simulateDijkstraDetailed(graphData, steps, startNode = 'A', targetNode = 'F') {
