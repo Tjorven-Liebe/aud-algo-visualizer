@@ -29,8 +29,22 @@ export default function Header({ currentCategory, onSwitchCategory }) {
           AuD
         </div>
         <div>
-          <div style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.5px' }}>
-            Algorithmen Visualisierer & Testat-Trainer
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <div style={{ fontSize: '18px', fontWeight: 700, letterSpacing: '-0.5px' }}>
+              Algorithmen Visualisierer & Testat-Trainer
+            </div>
+            <span style={{
+              backgroundColor: 'rgba(56, 189, 248, 0.15)',
+              border: '1px solid rgba(56, 189, 248, 0.4)',
+              color: '#38bdf8',
+              fontSize: '11px',
+              fontWeight: 700,
+              padding: '2px 7px',
+              borderRadius: '6px',
+              fontFamily: 'monospace'
+            }}>
+              v1.0.0
+            </span>
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8' }}>
             Cormen (CLRS) & Praktikumsabgaben (P1, P2, P3)
