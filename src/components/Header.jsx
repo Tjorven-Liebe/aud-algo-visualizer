@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart2, GitFork, Network } from 'lucide-react';
+import { Github } from 'lucide-react';
 
 export default function Header({ currentCategory, onSwitchCategory }) {
   return (
@@ -39,32 +39,70 @@ export default function Header({ currentCategory, onSwitchCategory }) {
         </div>
       </div>
 
-      <div style={{
-        display: 'flex',
-        gap: '8px',
-        backgroundColor: '#090d16',
-        padding: '4px',
-        borderRadius: '10px',
-        border: '1px solid #1e293b'
-      }}>
-        <button
-          onClick={() => onSwitchCategory('sort')}
-          style={tabBtnStyle(currentCategory === 'sort')}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* Category Tabs */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          backgroundColor: '#090d16',
+          padding: '4px',
+          borderRadius: '10px',
+          border: '1px solid #1e293b'
+        }}>
+          <button
+            onClick={() => onSwitchCategory('sort')}
+            style={tabBtnStyle(currentCategory === 'sort')}
+          >
+            📊 P1: Sortieralgorithmen
+          </button>
+          <button
+            onClick={() => onSwitchCategory('tree')}
+            style={tabBtnStyle(currentCategory === 'tree')}
+          >
+            🌲 P2: Baumnavigation & Balancierung
+          </button>
+          <button
+            onClick={() => onSwitchCategory('graph')}
+            style={tabBtnStyle(currentCategory === 'graph')}
+          >
+            🕸️ P3: Graphen & Netzwerke
+          </button>
+        </div>
+
+        {/* GitHub Link Button */}
+        <a
+          href="https://github.com/Tjorven-Liebe/aud-algo-visualizer"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            backgroundColor: '#1e293b',
+            border: '1px solid #334155',
+            color: '#f8fafc',
+            padding: '7px 14px',
+            borderRadius: '8px',
+            fontSize: '13px',
+            fontWeight: 600,
+            textDecoration: 'none',
+            transition: 'all 0.2s ease',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = '#334155';
+            e.currentTarget.style.borderColor = '#38bdf8';
+            e.currentTarget.style.color = '#38bdf8';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = '#1e293b';
+            e.currentTarget.style.borderColor = '#334155';
+            e.currentTarget.style.color = '#f8fafc';
+          }}
         >
-          📊 P1: Sortieralgorithmen
-        </button>
-        <button
-          onClick={() => onSwitchCategory('tree')}
-          style={tabBtnStyle(currentCategory === 'tree')}
-        >
-          🌲 P2: Baumnavigation & Balancierung
-        </button>
-        <button
-          onClick={() => onSwitchCategory('graph')}
-          style={tabBtnStyle(currentCategory === 'graph')}
-        >
-          🕸️ P3: Graphen & Netzwerke
-        </button>
+          <Github size={16} />
+          <span>GitHub</span>
+        </a>
       </div>
     </header>
   );
