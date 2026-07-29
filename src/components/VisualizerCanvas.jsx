@@ -20,6 +20,8 @@ export default function VisualizerCanvas({ currentStep, algoKey, rawData }) {
         drawTreePremiumStyle(ctx, canvas, currentStep, algoKey, animatedNodesRef.current);
       } else if (currentStep.type === 'graph') {
         drawGraph(ctx, canvas, currentStep, rawData, algoKey);
+      } else if (currentStep.type === 'hash' || algoKey === 'openhash' || algoKey === 'closedhash') {
+        drawHashTablePremiumStyle(ctx, canvas, currentStep, algoKey);
       } else {
         drawArray(ctx, canvas, currentStep);
       }
@@ -585,4 +587,182 @@ function drawGraph(ctx, canvas, step, rawData, algoKey) {
       ctx.restore();
     }
   });
+}
+
+
+// Drawing Hash Table (USFCA Galles Style)
+function drawHashTablePremiumStyle(ctx, canvas, step, algoKey) {
+  ctx.save();
+  const width = canvas.width;
+  const height = canvas.height;
+
+  const isClosed = (algoKey === 'closedhash') || (step.algoSubKey === 'closedhash');
+
+  if (isClosed) {
+    // CLOSED HASHING (Linear Probing / Open Addressing)
+    const table = step.table || Array.from({ length: 10 }, () => null);
+    const M = table.length;
+    const cellW = Math.min(68, Math.floor((width - 80) / M));
+    const cellH = 50;
+    const startX = (width - (M * cellW)) / 2;
+    const startY = height / 2 - 25;
+
+    // Header Title
+    ctx.fillStyle = '#f59e0b';
+    ctx.font = '700 16px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Closed Hash Table (Open Addressing - Linear Probing)', width / 2, 40);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 13px Inter, sans-serif';
+    ctx.fillText(`Hashfunktion: h(k) = k mod ${M} | Sondierung: (h(k) + i) mod ${M}`, width / 2, 65);
+
+    table.forEach((val, i) => {
+      const x = startX + i * cellW;
+      const y = startY;
+
+      const isProbed = step.probedSlot === i;
+      const isHighlightedVal = val !== null && val === step.highlightVal;
+
+      let bg = '#0f172a';
+      let border = '#334155';
+      let textColor = '#cbd5e1';
+
+      if (isProbed) {
+        bg = '#450a0a';
+        border = '#ef4444';
+        textColor = '#fca5a5';
+      } else if (isHighlightedVal) {
+        bg = '#064e3b';
+        border = '#34d399';
+        textColor = '#6ee7b7';
+      } else if (val !== null) {
+        bg = '#1e293b';
+        border = '#38bdf8';
+        textColor = '#f8fafc';
+      }
+
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = isProbed ? 3 : 2;
+
+      ctx.beginPath();
+      ctx.roundRect(x + 2, y, cellW - 4, cellH, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      // Index Label below
+      ctx.fillStyle = isProbed ? '#ef4444' : '#94a3b8';
+      ctx.font = '600 12px Fira Code, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`[${i}]`, x + cellW / 2, y + cellH + 20);
+
+      // Slot Value
+      ctx.fillStyle = textColor;
+      ctx.font = '700 16px Fira Code, monospace';
+      ctx.fillText(val !== null ? val : '—', x + cellW / 2, y + cellH / 2 + 5);
+
+      // Probe pointer arrow above
+      if (isProbed) {
+        ctx.fillStyle = '#ef4444';
+        ctx.font = '700 14px Inter';
+        ctx.fillText('▼ PROBE', x + cellW / 2, y - 12);
+      }
+    });
+
+  } else {
+    // OPEN HASHING (Chaining / Closed Addressing)
+    const buckets = step.buckets || Array.from({ length: 10 }, () => []);
+    const M = buckets.length;
+    const cellW = Math.min(65, Math.floor((width - 80) / M));
+    const cellH = 40;
+    const startX = (width - (M * cellW)) / 2;
+    const tableY = height - 80;
+
+    // Header Title
+    ctx.fillStyle = '#38bdf8';
+    ctx.font = '700 16px Inter, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Open Hash Table (Closed Addressing - Chaining)', width / 2, 40);
+
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '500 13px Inter, sans-serif';
+    ctx.fillText(`Hashfunktion: h(k) = k mod ${M} | Verkettete Listen an Bucket-Head`, width / 2, 65);
+
+    buckets.forEach((chain, i) => {
+      const bx = startX + i * cellW;
+      const by = tableY;
+
+      const isProbedBucket = step.probedBucket === i;
+
+      // Draw Bucket Base Cell
+      ctx.fillStyle = isProbedBucket ? '#1e1b4b' : '#0f172a';
+      ctx.strokeStyle = isProbedBucket ? '#818cf8' : '#334155';
+      ctx.lineWidth = 2;
+
+      ctx.beginPath();
+      ctx.roundRect(bx + 2, by, cellW - 4, cellH, 6);
+      ctx.fill();
+      ctx.stroke();
+
+      // Diagonal slash in bucket head cell (USFCA Galles style)
+      ctx.strokeStyle = isProbedBucket ? '#818cf8' : '#475569';
+      ctx.beginPath();
+      ctx.moveTo(bx + 6, by + cellH - 6);
+      ctx.lineTo(bx + cellW - 6, by + 6);
+      ctx.stroke();
+
+      // Bucket Index Label
+      ctx.fillStyle = isProbedBucket ? '#818cf8' : '#94a3b8';
+      ctx.font = '600 12px Fira Code, monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`[${i}]`, bx + cellW / 2, by + cellH + 20);
+
+      // Draw Linked List Chain Stacking UPWARDS (Galles USFCA Original Style)
+      let currentY = by - 50;
+      let prevX = bx + cellW / 2;
+      let prevY = by;
+
+      chain.forEach((val, level) => {
+        const isHighlightNode = val === step.highlightVal;
+
+        // Draw connecting arrow UPWARDS
+        ctx.strokeStyle = isHighlightNode ? '#4ade80' : '#38bdf8';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(prevX, prevY);
+        ctx.lineTo(prevX, currentY + cellH);
+        ctx.stroke();
+
+        // Arrow head
+        ctx.fillStyle = isHighlightNode ? '#4ade80' : '#38bdf8';
+        ctx.beginPath();
+        ctx.moveTo(prevX, currentY + cellH);
+        ctx.lineTo(prevX - 4, currentY + cellH + 6);
+        ctx.lineTo(prevX + 4, currentY + cellH + 6);
+        ctx.closePath();
+        ctx.fill();
+
+        // Draw Linked Node Box
+        ctx.fillStyle = isHighlightNode ? '#052e16' : '#1e293b';
+        ctx.strokeStyle = isHighlightNode ? '#4ade80' : '#38bdf8';
+        ctx.lineWidth = isHighlightNode ? 3 : 2;
+
+        ctx.beginPath();
+        ctx.roundRect(bx + 4, currentY, cellW - 8, cellH, 6);
+        ctx.fill();
+        ctx.stroke();
+
+        // Node Value
+        ctx.fillStyle = isHighlightNode ? '#4ade80' : '#f8fafc';
+        ctx.font = '700 14px Fira Code, monospace';
+        ctx.fillText(val, bx + cellW / 2, currentY + cellH / 2 + 4);
+
+        prevY = currentY;
+        currentY -= 50;
+      });
+    });
+  }
+
+  ctx.restore();
 }

@@ -2736,18 +2736,83 @@ function simulateBPlusTreeDetailed(data, steps) {
 }
 
 function simulateOpenHashDetailed(data, steps) {
-  steps.push({ type: 'array', arr: data, active: [0], codeLine: 0, log: "Open Hash Table (Chaining) gestartet. Hashfunktion: h(k) = k % 7.", q: "Was ist Closed Addressing (Chaining)?", a: "Kollisionen werden in verketteten Listen am jeweiligen Bucket-Index gespeichert." });
+  const M = 10;
+  const buckets = Array.from({ length: M }, () => []);
+
+  steps.push({
+    type: 'hash',
+    algoSubKey: 'openhash',
+    buckets: buckets.map(b => [...b]),
+    codeLine: 0,
+    log: `Open Hash Table (Closed Addressing / Chaining) initialisiert mit M=${M} Buckets (USFCA Galles).`,
+    q: "Was ist Closed Addressing (Chaining)?",
+    a: "Kollisionen werden in verketteten Listen am jeweiligen Bucket-Index gespeichert."
+  });
+
   data.forEach((v, idx) => {
-    const hash = v % 7;
-    steps.push({ type: 'array', arr: data, active: [idx], codeLine: 1, log: `Füge Schlüssel ${v} an Bucket [${hash}] ein (h(${v}) = ${v} % 7 = ${hash}).`, q: "Welche Laufzeit hat das Suchen bei Chaining im Best-Case?", a: "O(1) bei gleichmäßiger Verteilung." });
+    const hash = v % M;
+    buckets[hash].unshift(v);
+    steps.push({
+      type: 'hash',
+      algoSubKey: 'openhash',
+      buckets: buckets.map(b => [...b]),
+      highlightVal: v,
+      probedBucket: hash,
+      codeLine: 1,
+      log: `📌 Füge Schlüssel ${v} an Bucket [${hash}] ein (h(${v}) = ${v} % ${M} = ${hash}). Verkettete Liste aktualisiert.`,
+      q: "Welche Laufzeit hat das Suchen bei Chaining im Best-Case?",
+      a: "O(1) bei gleichmäßiger Verteilung der Schlüssel."
+    });
   });
 }
 
 function simulateClosedHashDetailed(data, steps) {
-  steps.push({ type: 'array', arr: data, active: [0], codeLine: 0, log: "Closed Hash Table (Open Addressing - Linear Probing) gestartet.", q: "Was ist Linear Probing?", a: "Bei Kollision wird sequentiell das nächste freie Feld im Array gesucht." });
+  const M = 10;
+  const table = new Array(M).fill(null);
+
+  steps.push({
+    type: 'hash',
+    algoSubKey: 'closedhash',
+    table: [...table],
+    codeLine: 0,
+    log: `Closed Hash Table (Open Addressing / Linear Probing) initialisiert mit ${M} Slots (USFCA Galles).`,
+    q: "Was ist Linear Probing?",
+    a: "Bei einer Kollision wird sequentiell der nächste freie Slot im Array gesucht."
+  });
+
   data.forEach((v, idx) => {
-    const hash = v % 7;
-    steps.push({ type: 'array', arr: data, active: [idx], codeLine: 1, log: `Füge Schlüssel ${v} ein: Start-Slot ${hash}. Sondierung...`, q: "Was versteht man unter primärer Klumpenbildung (Clustering)?", a: "Lange zusammenhängende belegte Abschnitte verlangsamen Sondierungen." });
+    let hash = v % M;
+    let probes = 0;
+    while (table[hash] !== null && probes < M) {
+      steps.push({
+        type: 'hash',
+        algoSubKey: 'closedhash',
+        table: [...table],
+        highlightVal: v,
+        probedSlot: hash,
+        codeLine: 2,
+        log: `⚠️ KOLLISION an Slot [${hash}] für Schlüssel ${v}! Sondiere nächsten Slot ${(hash + 1) % M}...`,
+        q: "Was versteht man unter primärer Klumpenbildung (Primary Clustering)?",
+        a: "Lange zusammenhängende belegte Abschnitte verlangsamen Sondierungen."
+      });
+      hash = (hash + 1) % M;
+      probes++;
+    }
+
+    if (table[hash] === null) {
+      table[hash] = v;
+      steps.push({
+        type: 'hash',
+        algoSubKey: 'closedhash',
+        table: [...table],
+        highlightVal: v,
+        probedSlot: hash,
+        codeLine: 3,
+        log: `✅ Freier Slot [${hash}] gefunden! Platziere Schlüssel ${v} in Slot [${hash}].`,
+        q: "Welche Auslastung (Load Factor α) sollte eine Hash-Tabelle mit Open Addressing maximal haben?",
+        a: "α = n/m < 0.7 (unter 70%), um lange Sondierungsketten zu vermeiden."
+      });
+    }
   });
 }
 
