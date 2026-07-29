@@ -43,7 +43,7 @@ export default function Header({ currentCategory, onSwitchCategory }) {
               borderRadius: '6px',
               fontFamily: 'monospace'
             }}>
-              v3.5.1
+              v3.6.0
             </span>
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8' }}>

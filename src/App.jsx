@@ -92,6 +92,8 @@ export default function App() {
     let defaultAlgo = 'hybridsort';
     if (newCat === 'tree') defaultAlgo = 'avl';
     else if (newCat === 'graph') defaultAlgo = 'dijkstra';
+    else if (newCat === 'heaps') defaultAlgo = 'binomialqueue';
+    else if (newCat === 'dp') defaultAlgo = 'dpfib';
 
     setAlgoKey(defaultAlgo);
     const fixedData = getDefaultData(defaultAlgo);

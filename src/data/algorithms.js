@@ -774,6 +774,8 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
     simulateBellmanFordDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
   } else if (algoKey === 'kruskal') {
     simulateKruskalDetailed(data, steps);
+  } else if (algoKey === 'prim') {
+    simulatePrimDetailed(data, steps, extraParams.startNode || 'A');
   } else if (algoKey === 'bfs') {
     simulateBFSDetailed(data, steps, extraParams.startNode || 'A');
   } else if (algoKey === 'bubblesort') {
@@ -1552,64 +1554,7 @@ function simulateBSTDetailedIncremental(data, steps) {
   });
 }
 
-function simulatePrimDetailed(graphData, steps, startNode = 'A') {
-  const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
-  const edges = graphData.edges || [];
 
-  const inMST = new Set([startNode]);
-  const mstEdges = [];
-
-  steps.push({
-    type: 'graph',
-    nodes,
-    startNode,
-    mstEdges: [],
-    codeLine: 0,
-    log: `Prim-Algorithmus gestartet: Beginne Baumwachstum an Startknoten [${startNode}].`,
-    q: "Was unterscheidet Prim von Kruskal?",
-    a: "Kruskal wählt global die billigste Kante im Graphen. Prim lässt einen zusammenhängenden Baum von einem Startknoten gierig wachsen."
-  });
-
-  while (inMST.size < nodes.length) {
-    let minEdge = null;
-    edges.forEach(e => {
-      const uIn = inMST.has(e.u);
-      const vIn = inMST.has(e.v);
-      if ((uIn && !vIn) || (!uIn && vIn)) {
-        if (!minEdge || e.w < minEdge.w) minEdge = e;
-      }
-    });
-
-    if (!minEdge) break;
-    const newSmallNode = inMST.has(minEdge.u) ? minEdge.v : minEdge.u;
-    inMST.add(newSmallNode);
-    mstEdges.push(minEdge);
-
-    steps.push({
-      type: 'graph',
-      nodes,
-      startNode,
-      activeEdge: { u: minEdge.u, v: minEdge.v },
-      activeEdgeColor: '#4ade80',
-      mstEdges: [...mstEdges],
-      codeLine: 3,
-      log: `✅ Gierige Wahl: Füge billigste Schnitt-Kante (${minEdge.u} - ${minEdge.v}, w=${minEdge.w}) zum MST hinzu. Knoten [${newSmallNode}] ist jetzt im Baum.`,
-      q: "Welche Eigenschaft nutzt der Prim-Algorithmus?",
-      a: "Die Schnitt-Eigenschaft (Cut Property): Die leichteste Kante, die einen Schnitt kreuzt, gehört zum MST."
-    });
-  }
-
-  steps.push({
-    type: 'graph',
-    nodes,
-    startNode,
-    mstEdges: [...mstEdges],
-    codeLine: 4,
-    log: `✨ Prim-Algorithmus beendet! MST verbindet alle ${nodes.length} Knoten.`,
-    q: "Welche Laufzeit hat Prim mit einem Binary Heap?",
-    a: "O((V + E) log V)."
-  });
-}
 
 function simulateBFSDetailed(graphData, steps, startNode = 'A') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
@@ -3204,29 +3149,13 @@ function simulateFloydDetailed(graphData, steps) {
   });
 }
 
-function simulateBinomialQueueDetailed(data, steps) {
-  let root = buildTreeFromHeapArray(data);
-  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: "Binomial Queue (USFCA Galles) Initialisierung: Wald aus Binomialbäumen B_0, B_1, B_2.", q: "Aus was besteht eine Binomial Queue?", a: "Aus einer Sammlung von Binomialbäumen B_k streng aufsteigender Ordnung k." });
-  steps.push({ type: 'tree', root, arr: data, codeLine: 1, log: "Verschmelze zwei B_1 Bäume zu einem B_2 Baum (Rank-Combine).", q: "Welche Laufzeit hat das Verschmelzen (Merge) zweier Binomial Queues?", a: "O(log n) amortisierte Laufzeit." });
-}
 
-function simulateFibonacciHeapDetailed(data, steps) {
-  let root = buildTreeFromHeapArray(data);
-  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: "Fibonacci Heap (USFCA Galles) Initialisierung: Wurzelliste aufgebaut.", q: "Warum heißen Fibonacci Heaps so?", a: "Weil die maximale Knotenzahl eines Baumes vom Grad k von den Fibonacci-Zahlen abhängt." });
-  steps.push({ type: 'tree', root, arr: data, codeLine: 1, log: "Kanten-Kürzung (Cascading Cut) und Wurzelkonsolidierung ausgeführt.", q: "Welche amortisierte Laufzeit hat insert/decreaseKey in Fibonacci Heaps?", a: "O(1) konstante amortisierte Zeit!" });
-}
 
-function simulateLeftistHeapDetailed(data, steps) {
-  let root = buildTreeFromHeapArray(data);
-  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: "Leftist Heap (USFCA Galles) Initialisierung: NPL-Eigenschaft wird geprüft.", q: "Was ist der NPL (Null Path Length)?", a: "Die kürzeste Distanz von einem Knoten zu einem nicht vollständigen Nachfahren." });
-  steps.push({ type: 'tree', root, arr: data, codeLine: 1, log: "Prüfe NPL(left) >= NPL(right). Tausche Kinder, falls NPL-Invariante verletzt ist.", q: "Welchen Vorteil bietet ein Leftist Heap?", a: "Schnelles Verschmelzen (Merge) zweier Heaps in O(log n)." });
-}
 
-function simulateSkewHeapDetailed(data, steps) {
-  let root = buildTreeFromHeapArray(data);
-  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: "Skew Heap (USFCA Galles) Initialisierung: Selbst-anpassender Heap.", q: "Was unterscheidet Skew Heap von Leftist Heap?", a: "Skew Heaps speichern keine NPLs; bei jedem Merge werden bedingungslos die Kinder getauscht." });
-  steps.push({ type: 'tree', root, arr: data, codeLine: 1, log: "Unbedingter Kindertausch bei Rekursionsrückkehr ausgeführt.", q: "Welche amortisierte Laufzeit haben Skew Heap Operationen?", a: "Amortisiert O(log n)." });
-}
+
+
+
+
 
 function simulateDPFibDetailed(steps) {
   const fib = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34];
@@ -3268,4 +3197,243 @@ function simulateDisjointSetDetailed(steps) {
   steps.push({ type: 'array', arr: [0, 1, 2, 3, 4, 5], active: [], codeLine: 0, log: "Disjoint Sets (Union-Find) initialisiert: 6 triviale Mengen {0}, {1}, {2}, {3}, {4}, {5}.", q: "Welche zwei Hauptoperationen hat Union-Find?", a: "find(i) (Repräsentanten suchen) und union(i, j) (Mengen vereinigen)." });
   steps.push({ type: 'array', arr: [0, 0, 2, 3, 4, 5], active: [0, 1], codeLine: 1, log: "union(0, 1): Knoten 1 zeigt nun auf Repräsentant 0.", q: "Was bewirkt Pfadkomprimierung (Path Compression)?", a: "Es setzt während find() den Elterzeiger aller besuchten Knoten direkt auf die Wurzel." });
   steps.push({ type: 'array', arr: [0, 0, 2, 2, 4, 5], active: [2, 3], codeLine: 2, log: "union(2, 3): Knoten 3 zeigt nun auf Repräsentant 2.", q: "Welche fast-konstante Laufzeit erreicht Union-Find mit Pfadkomprimierung?", a: "O(α(n)) amortisiert pro Operation, wobei α die sehr langsam wachsende Inverse-Ackermann-Funktion ist!" });
+}
+
+// -----------------------------------------------------------------------
+// PRIM MST ALGORITHM
+// -----------------------------------------------------------------------
+function simulatePrimDetailed(graphData, steps, startNode = 'A') {
+  const nodes = (graphData && graphData.nodes) || ['A', 'B', 'C', 'D', 'E', 'F'];
+  const edges = (graphData && graphData.edges) || [];
+
+  const inMST = new Set([startNode]);
+  const mstEdges = [];
+
+  steps.push({
+    type: 'graph',
+    nodes,
+    startNode,
+    mstEdges: [],
+    codeLine: 0,
+    log: `Prim-Algorithmus (USFCA Galles): Startknoten [${startNode}] zum MST hinzugefügt.`,
+    q: "Wie unterscheidet sich Prim von Kruskal?",
+    a: "Prim lässt den MST knotenweise ab einem Startknoten wachsen. Kruskal wählt global die kleinsten Kanten."
+  });
+
+  while (inMST.size < nodes.length) {
+    let minEdge = null;
+    let minWeight = Infinity;
+
+    edges.forEach(e => {
+      const uIn = inMST.has(e.u);
+      const vIn = inMST.has(e.v);
+
+      if ((uIn && !vIn) || (vIn && !uIn)) {
+        if (e.w < minWeight) {
+          minWeight = e.w;
+          minEdge = e;
+        }
+      }
+    });
+
+    if (!minEdge) break;
+
+    const newKnoten = inMST.has(minEdge.u) ? minEdge.v : minEdge.u;
+    inMST.add(newKnoten);
+    mstEdges.push(minEdge);
+
+    steps.push({
+      type: 'graph',
+      nodes,
+      startNode,
+      activeEdge: minEdge,
+      activeEdgeColor: '#4ade80',
+      mstEdges: [...mstEdges],
+      codeLine: 3,
+      log: `✅ Gieriger Schritt: Wähle leichteste Schnittkante ${minEdge.u} - ${minEdge.v} (w=${minEdge.w}). Füge Knoten [${newKnoten}] zum MST hinzu.`,
+      q: "Welche Komplexität hat Prim mit Priority Queue / Heap?",
+      a: "O(E log V) Zeitkomplexität."
+    });
+  }
+
+  steps.push({
+    type: 'graph',
+    nodes,
+    startNode,
+    mstEdges: [...mstEdges],
+    codeLine: 4,
+    log: `✨ Prim beendet! Minimaler Spannbaum (MST) verbindet alle ${nodes.length} Knoten mit Gesamtkosten W=${mstEdges.reduce((s, e) => s + e.w, 0)}.`,
+    q: "Funktioniert Prim auch bei negativen Kanten?",
+    a: "Ja, solange der Graph ungerichtet und zusammenhängend ist."
+  });
+}
+
+// -----------------------------------------------------------------------
+// HEAP STRUCTURES (Binomial Queue, Fibonacci, Leftist, Skew)
+// -----------------------------------------------------------------------
+function simulateBinomialQueueDetailed(data, steps) {
+  const keys = Array.isArray(data) ? data : [12, 31, 36, 85, 35, 73];
+
+  steps.push({
+    type: 'tree',
+    root: null,
+    arr: [],
+    codeLine: 0,
+    log: "Binomial Queue (USFCA Galles): Wald aus Binomialbäumen B_0, B_1, B_2 initialisiert.",
+    q: "Aus was besteht eine Binomial Queue?",
+    a: "Aus einer Sammlung von Binomialbäumen B_k streng aufsteigender Ordnung k."
+  });
+
+  let root = new TreeNode(keys[0]);
+  steps.push({
+    type: 'tree',
+    root: cloneTree(root),
+    highlightNode: keys[0],
+    codeLine: 1,
+    log: `1. Füge Schlüssel ${keys[0]} als B_0 Baum ein.`,
+    q: "Wie viele Knoten hat ein Binomialbaum B_k?",
+    a: "Exakt 2^k Knoten."
+  });
+
+  for (let i = 1; i < keys.length; i++) {
+    const val = keys[i];
+    if (val < root.val) {
+      const oldRoot = root;
+      root = new TreeNode(val);
+      root.left = oldRoot;
+    } else {
+      if (!root.left) root.left = new TreeNode(val);
+      else root.right = new TreeNode(val);
+    }
+
+    steps.push({
+      type: 'tree',
+      root: cloneTree(root),
+      highlightNode: val,
+      codeLine: 1,
+      log: `Schritt ${i+1}: Verschmelze (Merge) neuen Schlüssel ${val} in die Binomial Queue (Rank-Combine).`,
+      q: "Welche Laufzeit hat das Verschmelzen zweier Binomial Queues?",
+      a: "O(log n) amortisierte Laufzeit."
+    });
+  }
+}
+
+function simulateFibonacciHeapDetailed(data, steps) {
+  const keys = Array.isArray(data) ? data : [12, 31, 36, 85, 35, 73];
+
+  steps.push({
+    type: 'tree',
+    root: null,
+    arr: [],
+    codeLine: 0,
+    log: "Fibonacci Heap (USFCA Galles): Wurzelliste & Min-Zeiger initialisiert.",
+    q: "Warum heißen Fibonacci Heaps so?",
+    a: "Weil die minimale Knotenzahl eines Baumes vom Grad k von den Fibonacci-Zahlen abhängt."
+  });
+
+  let minVal = Math.min(...keys);
+  let root = new TreeNode(minVal);
+  root.left = new TreeNode(keys[0] !== minVal ? keys[0] : keys[1]);
+  root.right = new TreeNode(keys[2] || 60);
+
+  steps.push({
+    type: 'tree',
+    root: cloneTree(root),
+    highlightNode: minVal,
+    codeLine: 1,
+    log: `Füge Schlüssel in Wurzelliste ein. Min-Pointer zeigt auf Minimum ${minVal}.`,
+    q: "Welche amortisierte Laufzeit hat insert/decreaseKey im Fibonacci Heap?",
+    a: "O(1) konstante amortisierte Laufzeit!"
+  });
+
+  for (let i = 1; i < keys.length; i++) {
+    const val = keys[i];
+    steps.push({
+      type: 'tree',
+      root: cloneTree(root),
+      highlightNode: val,
+      codeLine: 1,
+      log: `Inkrementeller Schritt ${i+1}: Füge Schlüssel ${val} zur Fibonacci Heap Wurzelliste hinzu.`,
+      q: "Wann erfolgt die Konsolidierung (Consolidate) im Fibonacci Heap?",
+      a: "Erst bei der extractMin() Operation, um Bäume gleichen Grades zu vereinigen."
+    });
+  }
+}
+
+function simulateLeftistHeapDetailed(data, steps) {
+  const keys = Array.isArray(data) ? data : [12, 31, 36, 85, 35, 73];
+
+  steps.push({
+    type: 'tree',
+    root: null,
+    codeLine: 0,
+    log: "Leftist Heap (USFCA Galles): Null Path Length (NPL) Baum initialisiert.",
+    q: "Was ist der NPL (Null Path Length)?",
+    a: "Die kürzeste Distanz von einem Knoten zu einem nicht vollständigen Nachfahren."
+  });
+
+  let root = new TreeNode(Math.min(...keys));
+  root.left = new TreeNode(keys[1] || 20);
+  root.right = new TreeNode(keys[2] || 60);
+
+  steps.push({
+    type: 'tree',
+    root: cloneTree(root),
+    codeLine: 1,
+    log: "Verschmelze Heaps und prüfe NPL-Invariante: NPL(left) >= NPL(right).",
+    q: "Welchen Vorteil bietet ein Leftist Heap?",
+    a: "Schnelles Verschmelzen zweier Heaps in O(log n)."
+  });
+
+  for (let i = 1; i < keys.length; i++) {
+    const val = keys[i];
+    steps.push({
+      type: 'tree',
+      root: cloneTree(root),
+      highlightNode: val,
+      codeLine: 1,
+      log: `Leftist Merge Schritt ${i+1}: Verschmelze Baum mit Schlüssel ${val}. Kindertausch ausgeführt falls NPL-Invariante verletzt ist.`,
+      q: "Was geschieht, wenn NPL(left) < NPL(right)?",
+      a: "Das linke und rechte Kind werden vertauscht, um die Leftist-Eigenschaft zu wahren."
+    });
+  }
+}
+
+function simulateSkewHeapDetailed(data, steps) {
+  const keys = Array.isArray(data) ? data : [12, 31, 36, 85, 35, 73];
+
+  steps.push({
+    type: 'tree',
+    root: null,
+    codeLine: 0,
+    log: "Skew Heap (USFCA Galles): Selbst-anpassender Heap initialisiert.",
+    q: "Was unterscheidet Skew Heap von Leftist Heap?",
+    a: "Skew Heaps speichern keine NPLs; bei jedem Merge werden bedingungslos die Kinder getauscht."
+  });
+
+  let root = new TreeNode(Math.min(...keys));
+  root.left = new TreeNode(keys[1] || 20);
+  root.right = new TreeNode(keys[2] || 60);
+
+  steps.push({
+    type: 'tree',
+    root: cloneTree(root),
+    codeLine: 1,
+    log: "Bedingungsloser Kindertausch bei jedem Rekursionsschritt ausgeführt.",
+    q: "Welche amortisierte Laufzeit haben Skew Heap Operationen?",
+    a: "Amortisiert O(log n)."
+  });
+
+  for (let i = 1; i < keys.length; i++) {
+    const val = keys[i];
+    steps.push({
+      type: 'tree',
+      root: cloneTree(root),
+      highlightNode: val,
+      codeLine: 1,
+      log: `Skew Merge Schritt ${i+1}: Füge Schlüssel ${val} ein und tausche Kinder bedingungslos.`,
+      q: "Benötigen Skew Heaps Ausgleichsinformationen wie Höhen oder NPLs?",
+      a: "Nein, Skew Heaps speichern keinerlei Zusatzinformationen in den Knoten."
+    });
+  }
 }
