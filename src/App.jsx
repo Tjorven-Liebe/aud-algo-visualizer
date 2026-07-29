@@ -4,7 +4,7 @@ import VisualizerCanvas from './components/VisualizerCanvas';
 import CodePanel from './components/CodePanel';
 import TestatTrainerPanel from './components/TestatTrainerPanel';
 import ControlsFooter from './components/ControlsFooter';
-import { ALGORITHM_DATA, generateAlgoSteps, generateRandomData, getDefaultData } from './data/algorithms';
+import { ALGORITHM_DATA, generateAlgoSteps, generateRandomData, generateAdvancedExamData, getDefaultData } from './data/algorithms';
 
 export default function App() {
   const [category, setCategory] = useState('tree');
@@ -136,7 +136,7 @@ export default function App() {
     setStepIndex(0);
   };
 
-  // Generate new random data
+  // Generate new random data (TRULY RANDOM EVERY CLICK)
   const handleGenerateNewData = () => {
     setIsPlaying(false);
     const newData = generateRandomData(category);
@@ -152,6 +152,26 @@ export default function App() {
     }
 
     const newSteps = generateAlgoSteps(algoKey, newData, { k: kParam, startNode: newStart, targetNode: newTarget });
+    setSteps(newSteps);
+    setStepIndex(0);
+  };
+
+  // Generate Advanced Exam-Level Data (🔥 Advanced Aufgaben)
+  const handleGenerateAdvancedData = () => {
+    setIsPlaying(false);
+    const advData = generateAdvancedExamData(category, algoKey);
+    setRawData(advData);
+
+    let newStart = startNode;
+    let newTarget = targetNode;
+    if (category === 'graph' && advData && advData.nodes) {
+      newStart = advData.nodes[0];
+      newTarget = pickNonDirectTarget(advData.nodes, advData.edges, newStart);
+      setStartNode(newStart);
+      setTargetNode(newTarget);
+    }
+
+    const newSteps = generateAlgoSteps(algoKey, advData, { k: kParam, startNode: newStart, targetNode: newTarget });
     setSteps(newSteps);
     setStepIndex(0);
   };
@@ -392,6 +412,23 @@ export default function App() {
                 }}
               >
                 🎲 Neue Zufallsdaten
+              </button>
+
+              <button
+                onClick={handleGenerateAdvancedData}
+                style={{
+                  background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+                  border: 'none',
+                  color: '#fff',
+                  padding: '7px 14px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 10px rgba(245, 158, 11, 0.3)'
+                }}
+              >
+                🔥 Advanced Aufgaben
               </button>
             </div>
           </div>

@@ -159,15 +159,22 @@ export function getDefaultData(algoKey) {
   }
 }
 
+// Truly Random Dataset Generator (Ensures fresh unique values every single click)
 export function generateRandomData(category) {
+  const seed = Date.now() ^ Math.floor(Math.random() * 100000);
+
   if (category === 'sort') {
-    const size = Math.floor(Math.random() * 9) + 6;
-    return Array.from({ length: size }, () => Math.floor(Math.random() * 90) + 8);
+    const size = Math.floor(Math.random() * 7) + 6;
+    const arr = [];
+    for (let i = 0; i < size; i++) {
+      arr.push(Math.floor(Math.random() * 88) + 11);
+    }
+    return arr;
   } else if (category === 'tree') {
-    const size = Math.floor(Math.random() * 5) + 5;
+    const size = Math.floor(Math.random() * 4) + 6;
     const set = new Set();
     while (set.size < size) {
-      set.add(Math.floor(Math.random() * 90) + 8);
+      set.add(Math.floor(Math.random() * 88) + 11);
     }
     return Array.from(set);
   } else if (category === 'graph') {
@@ -180,6 +187,7 @@ export function generateRandomData(category) {
     const possiblePairs = [];
     for (let i = 0; i < nodeCount; i++) {
       for (let j = i + 1; j < nodeCount; j++) {
+        // Exclude direct edge between Start and Target to force multi-hop path
         if ((nodes[i] === startNode && nodes[j] === targetNode) ||
             (nodes[i] === targetNode && nodes[j] === startNode)) {
           continue;
@@ -190,14 +198,72 @@ export function generateRandomData(category) {
 
     possiblePairs.sort(() => Math.random() - 0.5);
 
-    const maxEdges = Math.min(possiblePairs.length, nodeCount + Math.floor(Math.random() * 2) + 2);
-    const edgeCount = Math.max(nodeCount, maxEdges);
+    const edgeCount = Math.min(possiblePairs.length, nodeCount + Math.floor(Math.random() * 2) + 1);
     const edges = possiblePairs.slice(0, edgeCount).map(pair => ({
       ...pair,
-      w: Math.floor(Math.random() * 12) + 1
+      w: Math.floor(Math.random() * 14) + 1
     }));
 
     return { nodes, edges };
+  }
+}
+
+// ADVANCED EXAM-LEVEL DATASET GENERATOR (🔥 Advanced Aufgaben)
+export function generateAdvancedExamData(category, algoKey) {
+  if (category === 'sort') {
+    if (algoKey === 'radixsort') {
+      return [904, 23, 812, 45, 904, 170, 802, 66, 24, 75, 45];
+    }
+    // Hard exam array with duplicates and reverse elements
+    return [88, 12, 45, 12, 99, 34, 67, 12, 90, 23, 11, 45, 88];
+  } else if (category === 'tree') {
+    if (algoKey === 'avl') {
+      // Triggers multiple sequential LR (Links-Rechts) and RL (Rechts-Links) double rotations!
+      return [50, 20, 80, 10, 35, 28, 38, 70, 90, 65, 68];
+    } else if (algoKey === 'splay') {
+      // Triggers deep Zig-Zig rotations
+      return [10, 20, 30, 40, 50, 60, 35, 25];
+    } else {
+      // Rot-Schwarz-Baum complex recoloring sequence
+      return [60, 30, 80, 15, 45, 70, 90, 20, 40, 35];
+    }
+  } else if (category === 'graph') {
+    const nodes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    if (algoKey === 'bellmanford') {
+      // Graph with negative edge weights to test Bellman-Ford cycle detection!
+      return {
+        nodes,
+        edges: [
+          { u: 'A', v: 'B', w: 5 },
+          { u: 'A', v: 'C', w: 3 },
+          { u: 'B', v: 'D', w: 4 },
+          { u: 'C', v: 'D', w: -2 },
+          { u: 'C', v: 'E', w: 6 },
+          { u: 'D', v: 'E', w: 1 },
+          { u: 'D', v: 'F', w: 3 },
+          { u: 'E', v: 'G', w: -1 },
+          { u: 'F', v: 'G', w: 2 }
+        ]
+      };
+    }
+
+    // Complex 7-node multi-path routing graph
+    return {
+      nodes,
+      edges: [
+        { u: 'A', v: 'B', w: 7 },
+        { u: 'A', v: 'C', w: 3 },
+        { u: 'B', v: 'C', w: 2 },
+        { u: 'B', v: 'D', w: 6 },
+        { u: 'C', v: 'D', w: 8 },
+        { u: 'C', v: 'E', w: 4 },
+        { u: 'D', v: 'E', w: 1 },
+        { u: 'D', v: 'F', w: 5 },
+        { u: 'E', v: 'F', w: 2 },
+        { u: 'E', v: 'G', w: 9 },
+        { u: 'F', v: 'G', w: 3 }
+      ]
+    };
   }
 }
 
@@ -435,7 +501,7 @@ function simulateRadixSortDetailed(arr, steps) {
     buckets2[digit].push(pass1Arr[i]);
     steps.push({
       type: 'array',
-      arr: [...pass2Arr],
+      arr: [...pass1Arr],
       active: [i],
       codeLine: 2,
       log: `Durchlauf 2 (Zehnerstelle): Ordne Element ${pass1Arr[i]} in Bucket [${digit}] ein.`,
@@ -790,7 +856,6 @@ function simulateDijkstraDetailed(graphData, steps, startNode = 'A', targetNode 
   if (!nodes.includes(startNode)) startNode = nodes[0];
   if (!nodes.includes(targetNode)) targetNode = nodes[nodes.length - 1];
 
-  // Check if direct edge exists between startNode and targetNode
   const hasDirectEdge = edges.some(e => (e.u === startNode && e.v === targetNode) || (e.u === targetNode && e.v === startNode));
 
   const distances = {};
