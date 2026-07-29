@@ -172,22 +172,30 @@ export function generateRandomData(category) {
     return Array.from(set);
   } else if (category === 'graph') {
     const allLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-    const nodeCount = Math.floor(Math.random() * 3) + 4;
+    const nodeCount = Math.floor(Math.random() * 2) + 5; // 5 or 6 nodes
     const nodes = allLabels.slice(0, nodeCount);
+    const startNode = nodes[0];
+    const targetNode = nodes[nodes.length - 1];
 
     const possiblePairs = [];
     for (let i = 0; i < nodeCount; i++) {
       for (let j = i + 1; j < nodeCount; j++) {
+        // GUARANTEE: Never create a direct 1-step edge between Start and Target!
+        if ((nodes[i] === startNode && nodes[j] === targetNode) ||
+            (nodes[i] === targetNode && nodes[j] === startNode)) {
+          continue;
+        }
         possiblePairs.push({ u: nodes[i], v: nodes[j] });
       }
     }
+
     possiblePairs.sort(() => Math.random() - 0.5);
 
-    const maxEdges = Math.min(possiblePairs.length, nodeCount + Math.floor(Math.random() * 3) + 1);
+    const maxEdges = Math.min(possiblePairs.length, nodeCount + Math.floor(Math.random() * 2) + 2);
     const edgeCount = Math.max(nodeCount, maxEdges);
     const edges = possiblePairs.slice(0, edgeCount).map(pair => ({
       ...pair,
-      w: Math.floor(Math.random() * 14) + 1
+      w: Math.floor(Math.random() * 12) + 1
     }));
 
     return { nodes, edges };
@@ -451,9 +459,7 @@ function simulateRadixSortDetailed(arr, steps) {
   });
 }
 
-// ----------------------------------------------------
 // FULL TREE SNAPSHOT SIMULATION
-// ----------------------------------------------------
 function simulateAVLDetailedIncremental(data, steps) {
   const treeContainer = { root: null };
 
@@ -777,16 +783,16 @@ function simulateRBDetailedIncremental(data, steps) {
   });
 }
 
-// ----------------------------------------------------
-// GRAPH SIMULATION WITH TARGET NODE & SHORTEST PATH FINDER
-// ----------------------------------------------------
+// GRAPH SIMULATION WITH NON-DIRECT START/TARGET GUARANTEE
 function simulateDijkstraDetailed(graphData, steps, startNode = 'A', targetNode = 'F') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = graphData.edges || [];
 
-  // Fallbacks if start/target not in node list
   if (!nodes.includes(startNode)) startNode = nodes[0];
   if (!nodes.includes(targetNode)) targetNode = nodes[nodes.length - 1];
+
+  // Check if direct edge exists between startNode and targetNode
+  const hasDirectEdge = edges.some(e => (e.u === startNode && e.v === targetNode) || (e.u === targetNode && e.v === startNode));
 
   const distances = {};
   const parentNode = {};
@@ -815,9 +821,11 @@ function simulateDijkstraDetailed(graphData, steps, startNode = 'A', targetNode 
     distances: { ...distances },
     treeEdges: [],
     codeLine: 1,
-    log: `Dijkstra initialisiert für Suche von Startknoten [${startNode}] zu ZIELKNOTEN [${targetNode}]. Startdistanz dist[${startNode}]=0. PriorityQueue: [${startNode}]`,
-    q: "Warum funktioniert Dijkstra nicht bei negativen Kantengewichten?",
-    a: "Dijkstra arbeitet greedy. Sobald ein Knoten aus der PriorityQueue entnommen wird, gilt seine bisherige Distanz als final."
+    log: hasDirectEdge
+      ? `Dijkstra initialisiert: Start [${startNode}] ➔ ZIEL [${targetNode}].`
+      : `Dijkstra initialisiert: Start [${startNode}] ➔ ZIEL [${targetNode}] (Keine direkte Kante vorhanden ➔ Mehrstufiger Pfad garantiert!).`,
+    q: "Warum ist ein mehrstufiger Pfad für die Visialisierung lehrreicher?",
+    a: "Weil man sieht, wie Kanten über Zwischenknoten nacheinander relaxiert werden, anstatt direkt in 1 Schritt zum Ziel zu springen."
   });
 
   const visited = new Set();
@@ -841,7 +849,7 @@ function simulateDijkstraDetailed(graphData, steps, startNode = 'A', targetNode 
       treeEdges: getTargetShortestPathEdges(),
       codeLine: 3,
       log: isTargetReached
-        ? `🎯 ZIELKNOTEN [${targetNode}] aus PriorityQueue entnommen! Minimaler Pfad gefunden mit Gesamtdistanz d[${targetNode}] = ${distances[targetNode]}.`
+        ? `🎯 ZIELKNOTEN [${targetNode}] aus PriorityQueue entnommen! Kürzester Pfad gefunden mit Gesamtdistanz d[${targetNode}] = ${distances[targetNode]}.`
         : `Entnehme Knoten ${curr} mit minimaler Distanz dist[${curr}] = ${distances[curr]} aus der PriorityQueue. Markiere ${curr} als FINALSORTIERT.`,
       q: "Welche Datenstruktur wird für die PriorityQueue verwendet?",
       a: "Ein Min-Heap (Binary Heap), der das Minimum in O(log V) ausgibt."
@@ -899,7 +907,6 @@ function simulateDijkstraDetailed(graphData, steps, startNode = 'A', targetNode 
     });
   }
 
-  // Construct final path string
   const targetPath = getTargetShortestPathEdges();
   const pathNodes = [startNode];
   targetPath.forEach(e => pathNodes.push(e.v));

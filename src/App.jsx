@@ -68,6 +68,22 @@ export default function App() {
     document.body.style.userSelect = 'none';
   };
 
+  // Helper to pick a non-direct target node for graph
+  const pickNonDirectTarget = (nodesList, edgesList, start) => {
+    if (!nodesList || nodesList.length <= 1) return start;
+    const directNeighbors = new Set();
+    (edgesList || []).forEach(e => {
+      if (e.u === start) directNeighbors.add(e.v);
+      if (e.v === start) directNeighbors.add(e.u);
+    });
+
+    const nonDirectNodes = nodesList.filter(n => n !== start && !directNeighbors.has(n));
+    if (nonDirectNodes.length > 0) {
+      return nonDirectNodes[nonDirectNodes.length - 1];
+    }
+    return nodesList[nodesList.length - 1];
+  };
+
   // Category switch
   const handleSwitchCategory = (newCat) => {
     setCategory(newCat);
@@ -83,7 +99,7 @@ export default function App() {
 
     const nodesList = fixedData && fixedData.nodes ? fixedData.nodes : ['A', 'B', 'C', 'D', 'E', 'F'];
     const newStart = nodesList[0];
-    const newTarget = nodesList[nodesList.length - 1];
+    const newTarget = pickNonDirectTarget(nodesList, fixedData.edges, newStart);
     setStartNode(newStart);
     setTargetNode(newTarget);
 
@@ -101,7 +117,7 @@ export default function App() {
 
     const nodesList = fixedData && fixedData.nodes ? fixedData.nodes : ['A', 'B', 'C', 'D', 'E', 'F'];
     const newStart = nodesList[0];
-    const newTarget = nodesList[nodesList.length - 1];
+    const newTarget = pickNonDirectTarget(nodesList, fixedData.edges, newStart);
     setStartNode(newStart);
     setTargetNode(newTarget);
 
@@ -130,7 +146,7 @@ export default function App() {
     let newTarget = targetNode;
     if (category === 'graph' && newData && newData.nodes) {
       newStart = newData.nodes[0];
-      newTarget = newData.nodes[newData.nodes.length - 1];
+      newTarget = pickNonDirectTarget(newData.nodes, newData.edges, newStart);
       setStartNode(newStart);
       setTargetNode(newTarget);
     }
