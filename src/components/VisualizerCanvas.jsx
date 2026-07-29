@@ -19,7 +19,7 @@ export default function VisualizerCanvas({ currentStep, algoKey, rawData }) {
       if (currentStep.type === 'tree') {
         drawTreePremiumStyle(ctx, canvas, currentStep, algoKey, animatedNodesRef.current);
       } else if (currentStep.type === 'graph') {
-        drawGraph(ctx, canvas, currentStep, rawData);
+        drawGraph(ctx, canvas, currentStep, rawData, algoKey);
       } else {
         drawArray(ctx, canvas, currentStep);
       }
@@ -349,14 +349,15 @@ function drawLectureRotationDiagram(ctx, canvas, rotationType, pivotVal) {
   ctx.restore();
 }
 
-// Drawing Dynamic Graph with Target Node Highlight & Non-overlapping Edge Badges
-function drawGraph(ctx, canvas, step, rawData) {
+// Drawing Dynamic Graph (Hide Start/Target badges for Kruskal)
+function drawGraph(ctx, canvas, step, rawData, algoKey) {
   const nodeList = step.nodes || (rawData && rawData.nodes) || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = (rawData && rawData.edges) || [];
   const n = nodeList.length;
 
-  const startNode = step.startNode || 'A';
-  const targetNode = step.targetNode || 'F';
+  const isKruskal = algoKey === 'kruskal';
+  const startNode = isKruskal ? null : (step.startNode || 'A');
+  const targetNode = isKruskal ? null : (step.targetNode || 'F');
 
   const positions = {};
   const centerX = canvas.width / 2;
@@ -376,7 +377,7 @@ function drawGraph(ctx, canvas, step, rawData) {
     return (e1.u === e2.u && e1.v === e2.v) || (e1.u === e2.v && e1.v === e2.u);
   }
 
-  // Draw Edges (Offset badges to 36% along line so crossing diagonal lines don't obscure badges!)
+  // Draw Edges (Offset badges to 38% along line so crossing diagonal lines don't obscure badges!)
   edges.forEach((e, idx) => {
     const u = positions[e.u];
     const v = positions[e.v];
@@ -419,7 +420,7 @@ function drawGraph(ctx, canvas, step, rawData) {
     ctx.stroke();
     ctx.restore();
 
-    // Offset badge to 38% along vector (prevents badges from sitting right on intersection points!)
+    // Offset badge to 38% / 62% along vector
     const offsetFactor = (idx % 2 === 0) ? 0.38 : 0.62;
     const badgeX = u.x + (v.x - u.x) * offsetFactor;
     const badgeY = u.y + (v.y - u.y) * offsetFactor;
@@ -436,6 +437,10 @@ function drawGraph(ctx, canvas, step, rawData) {
       badgeBg = '#052e16';
       badgeBorder = '#4ade80';
       textColor = '#4ade80';
+    } else if (isRejected) {
+      badgeBg = '#450a0a';
+      badgeBorder = '#ef4444';
+      textColor = '#fca5a5';
     }
 
     ctx.save();
@@ -455,14 +460,14 @@ function drawGraph(ctx, canvas, step, rawData) {
     ctx.restore();
   });
 
-  // Draw Nodes & Target / Start Badges
+  // Draw Nodes & Target / Start Badges (Only for Dijkstra & BellmanFord)
   nodeList.forEach(key => {
     const pos = positions[key];
     if (!pos) return;
 
     const isActiveNode = step.activeNode === key;
-    const isTarget = key === targetNode;
-    const isStart = key === startNode;
+    const isTarget = !isKruskal && key === targetNode;
+    const isStart = !isKruskal && key === startNode;
 
     let fillColor = '#1e293b';
     let strokeColor = '#38bdf8';
@@ -501,14 +506,14 @@ function drawGraph(ctx, canvas, step, rawData) {
     ctx.textBaseline = 'middle';
     ctx.fillText(key, pos.x, pos.y);
 
-    // Distance Badge
-    if (step.distances && step.distances[key] !== undefined) {
+    // Distance Badge (Only for Dijkstra & Bellman-Ford)
+    if (!isKruskal && step.distances && step.distances[key] !== undefined) {
       ctx.fillStyle = isTarget ? '#f59e0b' : '#4ade80';
       ctx.font = '700 13px Fira Code, monospace';
       ctx.fillText(`d=${step.distances[key]}`, pos.x, pos.y + 42);
     }
 
-    // Role Badges ABOVE Nodes (🎯 ZIEL / 🚀 START)
+    // Role Badges ABOVE Nodes (🎯 ZIEL / 🚀 START) - HIDE FOR KRUSKAL!
     if (isTarget) {
       ctx.save();
       ctx.fillStyle = 'rgba(120, 53, 15, 0.95)';
