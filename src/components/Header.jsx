@@ -43,7 +43,7 @@ export default function Header({ currentCategory, onSwitchCategory }) {
               borderRadius: '6px',
               fontFamily: 'monospace'
             }}>
-              v2.4.0
+              v3.0.0
             </span>
           </div>
           <div style={{ fontSize: '12px', color: '#94a3b8' }}>
@@ -66,19 +66,31 @@ export default function Header({ currentCategory, onSwitchCategory }) {
             onClick={() => onSwitchCategory('sort')}
             style={tabBtnStyle(currentCategory === 'sort')}
           >
-            📊 P1: Sortieralgorithmen
+            📊 P1: Sortieren
           </button>
           <button
             onClick={() => onSwitchCategory('tree')}
             style={tabBtnStyle(currentCategory === 'tree')}
           >
-            🌲 P2: Baumnavigation & Balancierung
+            🌲 P2: Bäume & Hashing
           </button>
           <button
             onClick={() => onSwitchCategory('graph')}
             style={tabBtnStyle(currentCategory === 'graph')}
           >
             🕸️ P3: Graphen & Netzwerke
+          </button>
+          <button
+            onClick={() => onSwitchCategory('heaps')}
+            style={tabBtnStyle(currentCategory === 'heaps')}
+          >
+            ⚡ Heap-Strukturen
+          </button>
+          <button
+            onClick={() => onSwitchCategory('dp')}
+            style={tabBtnStyle(currentCategory === 'dp')}
+          >
+            💡 DP & Rekursion
           </button>
         </div>
 

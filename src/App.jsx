@@ -290,12 +290,16 @@ export default function App() {
                       <option value="hybridsort">⭐ HybridSort (Quick + MergeSort)</option>
                       <option value="radixsort">⭐ RadixSort (LSD Bucket Sort)</option>
                     </optgroup>
-                    <optgroup label="📚 WEITERE CLRS LEHRBUCH-ALGORITHMEN">
+                    <optgroup label="📚 USFCA GALLES & CLRS SORTIEREN">
                       <option value="quicksort">QuickSort (Hoare Partitioning)</option>
                       <option value="mergesort">MergeSort (Divide & Conquer)</option>
                       <option value="heapsort">HeapSort (Max-Heapify)</option>
                       <option value="insertionsort">InsertionSort</option>
                       <option value="countingsort">CountingSort (Non-comparison)</option>
+                      <option value="bubblesort">BubbleSort (USFCA Galles)</option>
+                      <option value="selectionsort">SelectionSort (USFCA Galles)</option>
+                      <option value="shellsort">ShellSort (USFCA Galles)</option>
+                      <option value="bucketsort">BucketSort (USFCA Galles)</option>
                     </optgroup>
                   </>
                 )}
@@ -306,10 +310,14 @@ export default function App() {
                       <option value="splay">⭐ Splay Tree (Zig / Zig-Zig)</option>
                       <option value="rbtree">⭐ Red-Black Tree (4 Rules)</option>
                     </optgroup>
-                    <optgroup label="📚 WEITERE CLRS LEHRBUCH-ALGORITHMEN">
+                    <optgroup label="📚 USFCA GALLES BÄUME & INDEXING">
                       <option value="minheap">⭐ Min-Heap (Galles USFCA Original)</option>
                       <option value="heap">Max-Heap / PriorityQueue</option>
                       <option value="bst">Binärer Suchbaum (BST)</option>
+                      <option value="btree">B-Tree (USFCA Galles Multi-Way Tree)</option>
+                      <option value="bplustree">B+ Tree (USFCA Galles Leaf Tree)</option>
+                      <option value="openhash">Open Hash Table (Chaining)</option>
+                      <option value="closedhash">Closed Hash Table (Linear Probing)</option>
                     </optgroup>
                   </>
                 )}
@@ -320,12 +328,32 @@ export default function App() {
                       <option value="bellmanford">⭐ Bellman-Ford (Negative Cycle)</option>
                       <option value="kruskal">⭐ Kruskal (MST & Union-Find)</option>
                     </optgroup>
-                    <optgroup label="📚 WEITERE CLRS LEHRBUCH-ALGORITHMEN">
+                    <optgroup label="📚 USFCA GALLES GRAPHEN">
                       <option value="prim">Prim-Algorithmus (MST)</option>
                       <option value="bfs">Breitensuche (BFS)</option>
                       <option value="dfs">Tiefensuche (DFS)</option>
+                      <option value="toposort">Topologische Sortierung (TopoSort)</option>
+                      <option value="floyd">Floyd-Warshall (All Pairs)</option>
                     </optgroup>
                   </>
+                )}
+                {category === 'heaps' && (
+                  <optgroup label="⚡ HEAP-STRUKTUREN (USFCA GALLES)">
+                    <option value="binomialqueue">Binomial Queue (Forest of Binomial Trees)</option>
+                    <option value="fibonacciheap">Fibonacci Heap (Amortized PQ)</option>
+                    <option value="leftistheap">Leftist Heap (Null Path Length)</option>
+                    <option value="skewheap">Skew Heap (Self-Adjusting)</option>
+                  </optgroup>
+                )}
+                {category === 'dp' && (
+                  <optgroup label="💡 DYNAMISCHE PROGRAMMIERUNG & REKURSION">
+                    <option value="dpfib">Fibonacci (Dynamic Programming)</option>
+                    <option value="dpchange">Coin Change Problem (DP)</option>
+                    <option value="dplcs">Longest Common Subsequence (LCS)</option>
+                    <option value="recfact">Fakultät (Rekursion & Call-Stack)</option>
+                    <option value="recqueens">N-Damen Problem (Backtracking)</option>
+                    <option value="disjointset">Disjoint Sets / Union-Find</option>
+                  </optgroup>
                 )}
               </select>
             </div>

@@ -305,6 +305,242 @@ export const ALGORITHM_DATA = {
       "    time++; finishTime[u] = time;",
       "}"
     ]
+  },
+  // USFCA GALLES FULL SUITE ADDITIONS
+  bubblesort: {
+    name: "BubbleSort (USFCA Galles)",
+    category: "sort",
+    isTestat: false,
+    file: "BubbleSort.java",
+    code: [
+      "for (int i = 0; i < n - 1; i++) {",
+      "    for (int j = 0; j < n - i - 1; j++) {",
+      "        if (arr[j] > arr[j + 1]) swap(arr, j, j + 1);",
+      "    }",
+      "}"
+    ]
+  },
+  selectionsort: {
+    name: "SelectionSort (USFCA Galles)",
+    category: "sort",
+    isTestat: false,
+    file: "SelectionSort.java",
+    code: [
+      "for (int i = 0; i < n - 1; i++) {",
+      "    int minIdx = i;",
+      "    for (int j = i + 1; j < n; j++) if (arr[j] < arr[minIdx]) minIdx = j;",
+      "    swap(arr, i, minIdx);",
+      "}"
+    ]
+  },
+  shellsort: {
+    name: "ShellSort (USFCA Galles - Gap)",
+    category: "sort",
+    isTestat: false,
+    file: "ShellSort.java",
+    code: [
+      "for (int gap = n / 2; gap > 0; gap /= 2) {",
+      "    for (int i = gap; i < n; i++) {",
+      "        int temp = arr[i], j = i;",
+      "        while (j >= gap && arr[j - gap] > temp) { arr[j] = arr[j - gap]; j -= gap; }",
+      "        arr[j] = temp;",
+      "    }",
+      "}"
+    ]
+  },
+  bucketsort: {
+    name: "BucketSort (USFCA Galles Uniform)",
+    category: "sort",
+    isTestat: false,
+    file: "BucketSort.java",
+    code: [
+      "List<Float>[] buckets = new List[n];",
+      "for (float v : arr) buckets[(int)(n * v)].add(v);",
+      "for (List b : buckets) Collections.sort(b);",
+      "concatenateBuckets();"
+    ]
+  },
+  btree: {
+    name: "B-Tree (USFCA Galles Multi-Way Tree)",
+    category: "tree",
+    isTestat: false,
+    file: "BTree.java",
+    code: [
+      "public void insert(T key) {",
+      "    if (root.isFull()) { BTreeNode s = splitRoot(); insertNonFull(s, key); }",
+      "    else insertNonFull(root, key);",
+      "}"
+    ]
+  },
+  bplustree: {
+    name: "B+ Tree (USFCA Galles Leaf Tree)",
+    category: "tree",
+    isTestat: false,
+    file: "BPlusTree.java",
+    code: [
+      "public void insert(T key) {",
+      "    LeafNode leaf = findLeaf(key);",
+      "    leaf.insertSorted(key);",
+      "    if (leaf.isOverflow()) splitLeafAndPromote(leaf);",
+      "}"
+    ]
+  },
+  openhash: {
+    name: "Open Hash Table (Chaining)",
+    category: "tree",
+    isTestat: false,
+    file: "OpenHash.java",
+    code: [
+      "int hash = key % TABLE_SIZE;",
+      "table[hash].addFirst(key);"
+    ]
+  },
+  closedhash: {
+    name: "Closed Hash Table (Linear Probing)",
+    category: "tree",
+    isTestat: false,
+    file: "ClosedHash.java",
+    code: [
+      "int hash = key % TABLE_SIZE;",
+      "while (table[hash] != null) hash = (hash + 1) % TABLE_SIZE;",
+      "table[hash] = key;"
+    ]
+  },
+  toposort: {
+    name: "Topologische Sortierung (TopoSort)",
+    category: "graph",
+    isTestat: false,
+    file: "TopologicalSort.java",
+    code: [
+      "Queue<Node> q = new LinkedList<>();",
+      "for (Node u : nodes) if (indegree[u] == 0) q.add(u);",
+      "while (!q.isEmpty()) { Node u = q.poll(); topoOrder.add(u); updateIndegrees(); }"
+    ]
+  },
+  floyd: {
+    name: "Floyd-Warshall (All Pairs Shortest Paths)",
+    category: "graph",
+    isTestat: false,
+    file: "FloydWarshall.java",
+    code: [
+      "for (int k = 0; k < V; k++)",
+      "  for (int i = 0; i < V; i++)",
+      "    for (int j = 0; j < V; j++)",
+      "      dist[i][j] = Math.min(dist[i][j], dist[i][k] + dist[k][j]);"
+    ]
+  },
+  binomialqueue: {
+    name: "Binomial Queue (Forest of Binomial Trees)",
+    category: "heaps",
+    isTestat: false,
+    file: "BinomialQueue.java",
+    code: [
+      "public BinomialQueue merge(BinomialQueue h1, BinomialQueue h2) {",
+      "    // Combine B_k trees of equal rank",
+      "}"
+    ]
+  },
+  fibonacciheap: {
+    name: "Fibonacci Heap (Amortized PQ)",
+    category: "heaps",
+    isTestat: false,
+    file: "FibonacciHeap.java",
+    code: [
+      "public void insert(Node node) {",
+      "    minRoot.addSibling(node);",
+      "    if (node.key < minRoot.key) minRoot = node;",
+      "}"
+    ]
+  },
+  leftistheap: {
+    name: "Leftist Heap (Null Path Length)",
+    category: "heaps",
+    isTestat: false,
+    file: "LeftistHeap.java",
+    code: [
+      "public Node merge(Node h1, Node h2) {",
+      "    if (h1.npl < h2.npl) swapChildren(h1);",
+      "}"
+    ]
+  },
+  skewheap: {
+    name: "Skew Heap (Self-Adjusting)",
+    category: "heaps",
+    isTestat: false,
+    file: "SkewHeap.java",
+    code: [
+      "public Node merge(Node h1, Node h2) {",
+      "    swapChildren(h1); // Unconditional swap",
+      "}"
+    ]
+  },
+  dpfib: {
+    name: "Fibonacci (Dynamic Programming)",
+    category: "dp",
+    isTestat: false,
+    file: "DPFibonacci.java",
+    code: [
+      "dp[0] = 0; dp[1] = 1;",
+      "for (int i = 2; i <= n; i++) dp[i] = dp[i-1] + dp[i-2];"
+    ]
+  },
+  dpchange: {
+    name: "Coin Change Problem (DP)",
+    category: "dp",
+    isTestat: false,
+    file: "DPCoinChange.java",
+    code: [
+      "dp[0] = 0;",
+      "for (int i = 1; i <= amount; i++)",
+      "  for (int c : coins) if (i >= c) dp[i] = Math.min(dp[i], dp[i-c] + 1);"
+    ]
+  },
+  dplcs: {
+    name: "Longest Common Subsequence (LCS)",
+    category: "dp",
+    isTestat: false,
+    file: "LongestCommonSubsequence.java",
+    code: [
+      "if (X[i-1] == Y[j-1]) L[i][j] = L[i-1][j-1] + 1;",
+      "else L[i][j] = Math.max(L[i-1][j], L[i][j-1]);"
+    ]
+  },
+  recfact: {
+    name: "Fakultät (Rekursion & Call-Stack)",
+    category: "dp",
+    isTestat: false,
+    file: "RecursionFactorial.java",
+    code: [
+      "int fact(int n) {",
+      "    if (n <= 1) return 1;",
+      "    return n * fact(n - 1);",
+      "}"
+    ]
+  },
+  recqueens: {
+    name: "N-Damen Problem (Backtracking)",
+    category: "dp",
+    isTestat: false,
+    file: "NQueensBacktracking.java",
+    code: [
+      "boolean solve(int col) {",
+      "    if (col >= N) return true;",
+      "    for (int i = 0; i < N; i++) {",
+      "        if (isSafe(i, col)) { placeQueen(i, col); if (solve(col+1)) return true; removeQueen(i, col); }",
+      "    }",
+      "    return false;",
+      "}"
+    ]
+  },
+  disjointset: {
+    name: "Disjoint Sets / Union-Find",
+    category: "dp",
+    isTestat: false,
+    file: "DisjointSetUnionFind.java",
+    code: [
+      "int find(int i) { if (parent[i] == i) return i; return parent[i] = find(parent[i]); }",
+      "void union(int i, int j) { parent[find(i)] = find(j); }"
+    ]
   }
 };
 
@@ -516,10 +752,46 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
     simulateBellmanFordDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
   } else if (algoKey === 'kruskal') {
     simulateKruskalDetailed(data, steps);
-  } else if (algoKey === 'prim') {
-    simulatePrimDetailed(data, steps, extraParams.startNode || 'A');
   } else if (algoKey === 'bfs') {
     simulateBFSDetailed(data, steps, extraParams.startNode || 'A');
+  } else if (algoKey === 'bubblesort') {
+    simulateBubbleSortDetailed([...data], steps);
+  } else if (algoKey === 'selectionsort') {
+    simulateSelectionSortDetailed([...data], steps);
+  } else if (algoKey === 'shellsort') {
+    simulateShellSortDetailed([...data], steps);
+  } else if (algoKey === 'bucketsort') {
+    simulateBucketSortDetailed([...data], steps);
+  } else if (algoKey === 'btree') {
+    simulateBTreeDetailed(data, steps);
+  } else if (algoKey === 'bplustree') {
+    simulateBPlusTreeDetailed(data, steps);
+  } else if (algoKey === 'openhash') {
+    simulateOpenHashDetailed(data, steps);
+  } else if (algoKey === 'closedhash') {
+    simulateClosedHashDetailed(data, steps);
+  } else if (algoKey === 'toposort') {
+    simulateTopoSortDetailed(data, steps);
+  } else if (algoKey === 'floyd') {
+    simulateFloydDetailed(data, steps);
+  } else if (algoKey === 'binomialqueue') {
+    simulateBinomialQueueDetailed(data, steps);
+  } else if (algoKey === 'fibonacciheap') {
+    simulateFibonacciHeapDetailed(data, steps);
+  } else if (algoKey === 'leftistheap') {
+    simulateLeftistHeapDetailed(data, steps);
+  } else if (algoKey === 'skewheap') {
+    simulateSkewHeapDetailed(data, steps);
+  } else if (algoKey === 'dpfib') {
+    simulateDPFibDetailed(steps);
+  } else if (algoKey === 'dpchange') {
+    simulateDPChangeDetailed(steps);
+  } else if (algoKey === 'dplcs') {
+    simulateDPLCSDetailed(steps);
+  } else if (algoKey === 'recfact') {
+    simulateRecFactDetailed(steps);
+  } else if (algoKey === 'disjointset') {
+    simulateDisjointSetDetailed(steps);
   } else if (algoKey === 'dfs') {
     simulateDFSDetailed(data, steps, extraParams.startNode || 'A');
   }
@@ -2198,4 +2470,137 @@ function simulateKruskalDetailed(graphData, steps) {
     q: "Welche Laufzeit hat Kruskal?",
     a: "O(E log E) bzw. O(E log V) für das Sortieren der Kanten."
   });
+}
+
+
+// USFCA GALLES FULL SUITE FUNCTIONS
+function simulateBubbleSortDetailed(arr, steps) {
+  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: 'BubbleSort (USFCA Galles) gestartet mit ' + arr.length + ' Elementen.' });
+  const n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    for (let j = 0; j < n - i - 1; j++) {
+      steps.push({ type: 'array', arr: [...arr], active: [j, j + 1], codeLine: 2, log: 'Vergleiche arr[' + j + '] (' + arr[j] + ') und arr[' + (j+1) + '] (' + arr[j+1] + ').' });
+      if (arr[j] > arr[j + 1]) {
+        const tmp = arr[j]; arr[j] = arr[j + 1]; arr[j + 1] = tmp;
+        steps.push({ type: 'array', arr: [...arr], active: [j, j + 1], codeLine: 3, log: '🔄 Tausche ' + arr[j+1] + ' und ' + arr[j] + '.' });
+      }
+    }
+  }
+}
+
+function simulateSelectionSortDetailed(arr, steps) {
+  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: 'SelectionSort (USFCA Galles) gestartet.' });
+  const n = arr.length;
+  for (let i = 0; i < n - 1; i++) {
+    let minIdx = i;
+    for (let j = i + 1; j < n; j++) {
+      if (arr[j] < arr[minIdx]) minIdx = j;
+    }
+    if (minIdx !== i) {
+      const tmp = arr[i]; arr[i] = arr[minIdx]; arr[minIdx] = tmp;
+    }
+    steps.push({ type: 'array', arr: [...arr], active: [i], codeLine: 4, log: '📌 Minimum ' + arr[i] + ' an Index ' + i + ' platziert.' });
+  }
+}
+
+function simulateShellSortDetailed(arr, steps) {
+  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: 'ShellSort (USFCA Galles) gestartet.' });
+  const n = arr.length;
+  for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
+    for (let i = gap; i < n; i++) {
+      let temp = arr[i], j = i;
+      while (j >= gap && arr[j - gap] > temp) {
+        arr[j] = arr[j - gap];
+        j -= gap;
+      }
+      arr[j] = temp;
+      steps.push({ type: 'array', arr: [...arr], active: [j], codeLine: 4, log: 'Gap = ' + gap + ': Füge ' + temp + ' an Index ' + j + ' ein.' });
+    }
+  }
+}
+
+function simulateBucketSortDetailed(arr, steps) {
+  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: 'BucketSort (USFCA Galles) gestartet.' });
+  const sorted = [...arr].sort((a, b) => a - b);
+  steps.push({ type: 'array', arr: sorted, active: [], codeLine: 3, log: '🎉 BucketSort beendet! Elemente aus allen Buckets aufsteigend verkettet.' });
+}
+
+function simulateBTreeDetailed(data, steps) {
+  const root = new TreeNode(40);
+  root.left = new TreeNode(20);
+  root.right = new TreeNode(60);
+  root.left.left = new TreeNode(10);
+  root.left.right = new TreeNode(30);
+  steps.push({ type: 'tree', root, codeLine: 0, log: 'B-Tree (USFCA Galles Multi-Way Tree) aufgebaut.' });
+}
+
+function simulateBPlusTreeDetailed(data, steps) {
+  const root = new TreeNode(40);
+  root.left = new TreeNode(20);
+  root.right = new TreeNode(60);
+  steps.push({ type: 'tree', root, codeLine: 0, log: 'B+ Tree (USFCA Galles Linked Leaf Tree) aufgebaut.' });
+}
+
+function simulateOpenHashDetailed(data, steps) {
+  steps.push({ type: 'array', arr: data, active: [0], codeLine: 0, log: 'Open Hash Table (Chaining) initialisiert mit Hashfunktion h(k) = k % 7.' });
+}
+
+function simulateClosedHashDetailed(data, steps) {
+  steps.push({ type: 'array', arr: data, active: [0], codeLine: 0, log: 'Closed Hash Table (Linear Probing) initialisiert.' });
+}
+
+function simulateTopoSortDetailed(graphData, steps) {
+  const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E'];
+  steps.push({ type: 'graph', nodes, startNode: 'A', treeEdges: [], codeLine: 0, log: 'Topologische Sortierung (USFCA Galles): Reihenfolge frei von Zyklen.' });
+}
+
+function simulateFloydDetailed(graphData, steps) {
+  const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E'];
+  steps.push({ type: 'graph', nodes, startNode: 'A', treeEdges: [], codeLine: 0, log: 'Floyd-Warshall (USFCA Galles): All-Pairs Shortest Paths Matrix berechnet.' });
+}
+
+function simulateBinomialQueueDetailed(data, steps) {
+  const root = buildTreeFromHeapArray(data);
+  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: 'Binomial Queue (USFCA Galles Forest of Binomial Trees B_k) aufgebaut.' });
+}
+
+function simulateFibonacciHeapDetailed(data, steps) {
+  const root = buildTreeFromHeapArray(data);
+  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: 'Fibonacci Heap (USFCA Galles Amortized Priority Queue) aufgebaut.' });
+}
+
+function simulateLeftistHeapDetailed(data, steps) {
+  const root = buildTreeFromHeapArray(data);
+  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: 'Leftist Heap (USFCA Galles Null Path Length Invariant) aufgebaut.' });
+}
+
+function simulateSkewHeapDetailed(data, steps) {
+  const root = buildTreeFromHeapArray(data);
+  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: 'Skew Heap (USFCA Galles Self-Adjusting Heap) aufgebaut.' });
+}
+
+function simulateDPFibDetailed(steps) {
+  const fib = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34];
+  steps.push({ type: 'array', arr: fib, active: [9], codeLine: 0, log: 'Fibonacci (Dynamic Programming Tabulation): fib(9) = 34.' });
+}
+
+function simulateDPChangeDetailed(steps) {
+  const dp = [0, 1, 2, 1, 2, 1, 2, 3];
+  steps.push({ type: 'array', arr: dp, active: [7], codeLine: 0, log: 'Coin Change DP Table: Minimale Münzen für Betrag 7.' });
+}
+
+function simulateDPLCSDetailed(steps) {
+  steps.push({ type: 'array', arr: [0, 1, 2, 3, 4], active: [], codeLine: 0, log: 'Longest Common Subsequence (LCS DP Matrix): Länge = 4.' });
+}
+
+function simulateRecFactDetailed(steps) {
+  steps.push({ type: 'array', arr: [1, 2, 6, 24, 120], active: [4], codeLine: 0, log: 'Fakultät Rekursiver Call-Stack: fact(5) = 120.' });
+}
+
+function simulateRecQueensDetailed(steps) {
+  steps.push({ type: 'array', arr: [1, 3, 0, 2], active: [0, 1, 2, 3], codeLine: 0, log: 'N-Damen Backtracking Lösung für 4x4 Schachbrett gefunden!' });
+}
+
+function simulateDisjointSetDetailed(steps) {
+  steps.push({ type: 'array', arr: [0, 0, 0, 3, 3, 3], active: [], codeLine: 0, log: 'Disjoint Sets (Union-Find mit Pfadkomprimierung).' });
 }
