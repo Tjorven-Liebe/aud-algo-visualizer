@@ -180,14 +180,14 @@ export const ALGORITHM_DATA = {
     ]
   },
   heap: {
-    name: "Max-Heap / PriorityQueue (CLRS Kap. 6)",
+    name: "Max-Heap / PriorityQueue (Galles USFCA & CLRS Kap. 6)",
     category: "tree",
     isTestat: false,
     file: "MaxHeap.java",
     code: [
       "public void insert(int key) {",
-      "    heap.add(key);",
-      "    heapifyUp(heap.size() - 1); // Elter-Vergleich (i-1)/2",
+      "    heap.add(key); // Am Ende des Arrays anfügen",
+      "    heapifyUp(heap.size() - 1); // Up-Heapify mit Parent (i-1)/2",
       "}"
     ]
   },
@@ -310,8 +310,9 @@ export function getDefaultData(algoKey) {
     case 'avl':
     case 'rbtree':
     case 'bst':
-    case 'heap':
       return [40, 20, 60, 10, 30, 25];
+    case 'heap':
+      return [10, 20, 60, 40, 50, 30];
     case 'splay':
       return [10, 60, 20, 40];
     case 'dijkstra':
@@ -390,6 +391,8 @@ export function generateAdvancedExamData(category, algoKey) {
       return [50, 20, 80, 10, 35, 28, 38, 70, 90, 65, 68];
     } else if (algoKey === 'splay') {
       return [10, 60, 20, 40, 30, 50];
+    } else if (algoKey === 'heap') {
+      return [15, 85, 35, 95, 25, 75, 65, 45];
     } else {
       return [60, 30, 80, 15, 45, 70, 90, 20, 40, 35];
     }
@@ -490,7 +493,7 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
   } else if (algoKey === 'bst') {
     simulateBSTDetailedIncremental(data, steps);
   } else if (algoKey === 'heap') {
-    simulateHeapDetailedIncremental(data, steps);
+    simulateHeapDetailedIncrementalGalles(data, steps);
   } else if (algoKey === 'dijkstra') {
     simulateDijkstraDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
   } else if (algoKey === 'bellmanford') {
@@ -509,7 +512,96 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
 }
 
 // -----------------------------------------------------------------------
-// CLRS & GALLES REAL RED-BLACK TREE ENGINE (4 Rules, Case 1, Case 2, Case 3)
+// GALLES USFCA REAL BINARY MAX-HEAP ENGINE (Array + Binary Tree mapping)
+// -----------------------------------------------------------------------
+function simulateHeapDetailedIncrementalGalles(data, steps) {
+  const heapArray = [];
+
+  steps.push({
+    type: 'tree',
+    root: null,
+    arr: [],
+    codeLine: 0,
+    log: `Starte inkrementellen Max-Heap Aufbau (Galles USFCA & CLRS Kap. 6). Schlüssel: [${data.join(', ')}].`,
+    q: "Wie wird ein Binärer Heap im Speicher abgelegt?",
+    a: "In einem 0-basierten Array: Für Index i ist das linke Kind bei 2i+1, das rechte Kind bei 2i+2, der Vater bei (i-1)/2."
+  });
+
+  data.forEach((val, idx) => {
+    heapArray.push(val);
+    let currIdx = heapArray.length - 1;
+
+    steps.push({
+      type: 'tree',
+      root: buildTreeFromHeapArray(heapArray),
+      arr: [...heapArray],
+      highlightNode: val,
+      codeLine: 1,
+      log: `📌 Inkrementeller Schritt ${idx + 1}/${data.length}: Füge Schlüssel ${val} am Ende des Heap-Arrays an Index ${currIdx} an.`,
+      q: "Wo werden neue Elemente in einem Heap zuerst eingefügt?",
+      a: "Immer am Ende der Baumstruktur (letzter Blattplatz), um die Vollständigkeit des Binärbaums einzuhalten."
+    });
+
+    // Heapify-Up (Bubble Up)
+    while (currIdx > 0) {
+      const parentIdx = Math.floor((currIdx - 1) / 2);
+      if (heapArray[currIdx] > heapArray[parentIdx]) {
+        // Swap with parent
+        const tmp = heapArray[currIdx];
+        heapArray[currIdx] = heapArray[parentIdx];
+        heapArray[parentIdx] = tmp;
+
+        steps.push({
+          type: 'tree',
+          root: buildTreeFromHeapArray(heapArray),
+          arr: [...heapArray],
+          highlightNode: tmp,
+          codeLine: 2,
+          log: `⬆️ UP-HEAPIFY: ${tmp} > Vater ${heapArray[currIdx]} ➔ Tausche Index ${currIdx} mit Vater-Index ${parentIdx}!`,
+          q: "Was ist die Max-Heap Invariante?",
+          a: "Jeder Elternknoten muss größer oder gleich seinen Kindern sein: A[parent(i)] >= A[i]."
+        });
+
+        currIdx = parentIdx;
+      } else {
+        break;
+      }
+    }
+
+    steps.push({
+      type: 'tree',
+      root: buildTreeFromHeapArray(heapArray),
+      arr: [...heapArray],
+      highlightNode: val,
+      codeLine: 3,
+      log: `✅ Heapify-Up für ${val} abgeschlossen. Element steht an richtiger Heap-Position.`,
+      q: "Welche Laufzeit hat das Einfügen in einen Heap mit n Elementen?",
+      a: "O(log n) im Worst Case, da der Pfad vom Blatt zur Wurzel maximal der Höhe h = log2(n) entspricht."
+    });
+  });
+}
+
+function buildTreeFromHeapArray(heapArr) {
+  if (!heapArr || heapArr.length === 0) return null;
+  const nodes = heapArr.map(v => new TreeNode(v));
+  for (let i = 0; i < heapArr.length; i++) {
+    const leftIdx = 2 * i + 1;
+    const rightIdx = 2 * i + 2;
+    if (leftIdx < heapArr.length) {
+      nodes[i].left = nodes[leftIdx];
+      nodes[leftIdx].parent = nodes[i];
+    }
+    if (rightIdx < heapArr.length) {
+      nodes[i].right = nodes[rightIdx];
+      nodes[rightIdx].parent = nodes[i];
+    }
+  }
+  updateTreeHeights(nodes[0]);
+  return nodes[0];
+}
+
+// -----------------------------------------------------------------------
+// CLRS & GALLES REAL RED-BLACK TREE ENGINE
 // -----------------------------------------------------------------------
 function simulateRBDetailedIncrementalCLRS(data, steps) {
   const treeHolder = { root: null };
@@ -548,7 +640,6 @@ function simulateRBDetailedIncrementalCLRS(data, steps) {
 
     fixupRBInsertCLRS(treeHolder, newNode, steps, val);
 
-    // Rule 2: Ensure root is BLACK
     if (treeHolder.root) treeHolder.root.color = 'BLACK';
 
     steps.push({
@@ -594,9 +685,8 @@ function fixupRBInsertCLRS(treeHolder, z, steps, targetVal) {
     if (!g) break;
 
     if (p === g.left) {
-      const u = g.right; // Uncle
+      const u = g.right;
       if (u && u.color === 'RED') {
-        // CASE 1: Uncle is RED -> Recolor Parent & Uncle to BLACK, Grandparent to RED
         p.color = 'BLACK';
         u.color = 'BLACK';
         g.color = 'RED';
@@ -612,7 +702,6 @@ function fixupRBInsertCLRS(treeHolder, z, steps, targetVal) {
         z = g;
       } else {
         if (z === p.right) {
-          // CASE 2: Uncle is BLACK & z is right child (Triangle) -> Left rotate parent
           z = p;
           rotateLeftRB(treeHolder, z);
           steps.push({
@@ -627,7 +716,6 @@ function fixupRBInsertCLRS(treeHolder, z, steps, targetVal) {
             a: "Es wandelt ein Zick-Zack Muster (inneres Kind) durch Rotation in ein einfaches Geradenmuster (Fall 3) um."
           });
         }
-        // CASE 3: Uncle is BLACK & z is left child (Line) -> Recolor & Right rotate grandparent
         z.parent.color = 'BLACK';
         g.color = 'RED';
         rotateRightRB(treeHolder, g);
@@ -644,10 +732,8 @@ function fixupRBInsertCLRS(treeHolder, z, steps, targetVal) {
         });
       }
     } else {
-      // Mirror case (Parent is right child of Grandparent)
-      const u = g.left; // Uncle
+      const u = g.left;
       if (u && u.color === 'RED') {
-        // CASE 1: Uncle is RED
         p.color = 'BLACK';
         u.color = 'BLACK';
         g.color = 'RED';
@@ -663,7 +749,6 @@ function fixupRBInsertCLRS(treeHolder, z, steps, targetVal) {
         z = g;
       } else {
         if (z === p.left) {
-          // CASE 2: Triangle
           z = p;
           rotateRightRB(treeHolder, z);
           steps.push({
@@ -678,7 +763,6 @@ function fixupRBInsertCLRS(treeHolder, z, steps, targetVal) {
             a: "Rotiert den inneren Knoten nach außen für Fall 3."
           });
         }
-        // CASE 3: Line
         z.parent.color = 'BLACK';
         g.color = 'RED';
         rotateLeftRB(treeHolder, g);
@@ -739,7 +823,7 @@ function rotateLeftRB(treeHolder, x) {
 }
 
 // -----------------------------------------------------------------------
-// GALLES USFCA REAL SPLAY TREE ENGINE (Zig, Zig-Zig, Zig-Zag Rotations)
+// GALLES USFCA REAL SPLAY TREE ENGINE
 // -----------------------------------------------------------------------
 function simulateSplayDetailedIncrementalGalles(data, steps) {
   const treeHolder = { root: null };
@@ -1149,24 +1233,6 @@ function simulateBSTDetailedIncremental(data, steps) {
       log: `🌱 Schritt ${idx + 1}/${data.length}: Füge Schlüssel ${val} in den BST ein.`,
       q: "Welche Suchbaum-Invariante gilt im BST?",
       a: "Alle Schlüssel im linken Teilbaum sind kleiner, alle im rechten Teilbaum größer als der Knoten."
-    });
-  });
-}
-
-function simulateHeapDetailedIncremental(data, steps) {
-  let root = null;
-  steps.push({ type: 'tree', root: null, codeLine: 0, log: `Starte inkrementelles Einfügen in den Max-Heap (PriorityQueue).` });
-
-  data.forEach((val, idx) => {
-    root = insertBST(root, val);
-    steps.push({
-      type: 'tree',
-      root: cloneTree(root),
-      highlightNode: val,
-      codeLine: 2,
-      log: `📌 Heapify-Up Schritt ${idx + 1}/${data.length}: Element ${val} eingefügt.`,
-      q: "Wo steht das Maximum im Max-Heap?",
-      a: "Stets an der Wurzel an Index 0!"
     });
   });
 }

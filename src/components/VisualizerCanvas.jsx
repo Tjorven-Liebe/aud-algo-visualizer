@@ -105,7 +105,52 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
     return;
   }
 
-  layoutTree(root, canvas.width, 80);
+  // If Heap, adjust tree Y offset slightly for array bar
+  const treeStartY = algoKey === 'heap' ? 105 : 80;
+  layoutTree(root, canvas.width, treeStartY);
+
+  // Galles USFCA Heap Array Representation Bar at Top
+  if (algoKey === 'heap' && step.arr && step.arr.length > 0) {
+    const arr = step.arr;
+    const cellW = Math.min(46, Math.floor(640 / (arr.length + 1)));
+    const cellH = 26;
+    const startX = (canvas.width - (arr.length + 1) * cellW) / 2;
+    const startY = 18;
+
+    // Draw -INF 0-index cell
+    ctx.fillStyle = '#1e293b';
+    ctx.strokeStyle = '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.fillRect(startX, startY, cellW, cellH);
+    ctx.strokeRect(startX, startY, cellW, cellH);
+    ctx.fillStyle = '#64748b';
+    ctx.font = '600 10px Fira Code, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('-INF', startX + cellW / 2, startY + cellH / 2);
+    ctx.fillText('[0]', startX + cellW / 2, startY + cellH + 11);
+
+    // Draw array elements [1..n]
+    arr.forEach((v, idx) => {
+      const x = startX + (idx + 1) * cellW;
+      const isHighlight = step.highlightNode === v;
+      ctx.fillStyle = isHighlight ? '#b45309' : '#0f172a';
+      ctx.strokeStyle = isHighlight ? '#f59e0b' : '#38bdf8';
+      ctx.lineWidth = isHighlight ? 2 : 1.5;
+      ctx.fillRect(x, startY, cellW, cellH);
+      ctx.strokeRect(x, startY, cellW, cellH);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '700 12px Fira Code, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(v, x + cellW / 2, startY + cellH / 2);
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '600 10px Fira Code, monospace';
+      ctx.fillText(`[${idx + 1}]`, x + cellW / 2, startY + cellH + 11);
+    });
+  }
 
   function updateNodePositions(node) {
     if (!node) return;
