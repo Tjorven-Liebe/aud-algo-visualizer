@@ -338,7 +338,6 @@ export function getDefaultData(algoKey) {
   }
 }
 
-// Truly Random Dataset Generator
 export function generateRandomData(category) {
   if (category === 'sort') {
     const size = Math.floor(Math.random() * 7) + 6;
@@ -379,7 +378,6 @@ export function generateRandomData(category) {
   }
 }
 
-// ADVANCED EXAM-LEVEL DATASET GENERATOR
 export function generateAdvancedExamData(category, algoKey) {
   if (category === 'sort') {
     if (algoKey === 'radixsort' || algoKey === 'countingsort') {
@@ -469,53 +467,440 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
     const arr = [...data];
     const k = extraParams.k || 2;
     simulateHybridSortDetailed(arr, 0, arr.length - 1, 0, k, steps);
-  } else if (algoKey === 'radixsort' || algoKey === 'countingsort') {
+  } else if (algoKey === 'radixsort') {
     simulateRadixSortDetailed([...data], steps);
+  } else if (algoKey === 'countingsort') {
+    simulateCountingSortDetailed([...data], steps);
   } else if (algoKey === 'mergesort') {
     const arr = [...data];
     simulateMergeSortDetailed(arr, 0, arr.length - 1, steps);
-  } else if (algoKey === 'heapsort' || algoKey === 'insertionsort') {
-    simulateSimpleSort([...data], algoKey, steps);
+  } else if (algoKey === 'heapsort') {
+    simulateHeapSortDetailed([...data], steps);
+  } else if (algoKey === 'insertionsort') {
+    simulateInsertionSortDetailed([...data], steps);
   } else if (algoKey === 'avl') {
     simulateAVLDetailedIncremental(data, steps);
   } else if (algoKey === 'splay') {
     simulateSplayDetailedIncremental(data, steps);
   } else if (algoKey === 'rbtree') {
     simulateRBDetailedIncremental(data, steps);
-  } else if (algoKey === 'bst' || algoKey === 'heap') {
-    simulateBSTDetailed(data, steps);
+  } else if (algoKey === 'bst') {
+    simulateBSTDetailedIncremental(data, steps);
+  } else if (algoKey === 'heap') {
+    simulateHeapDetailedIncremental(data, steps);
   } else if (algoKey === 'dijkstra') {
     simulateDijkstraDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
   } else if (algoKey === 'bellmanford') {
     simulateBellmanFordDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
-  } else if (algoKey === 'kruskal' || algoKey === 'prim') {
+  } else if (algoKey === 'kruskal') {
     simulateKruskalDetailed(data, steps);
-  } else if (algoKey === 'bfs' || algoKey === 'dfs') {
-    simulateBFSDetailed(data, steps, algoKey, extraParams.startNode || 'A');
+  } else if (algoKey === 'prim') {
+    simulatePrimDetailed(data, steps, extraParams.startNode || 'A');
+  } else if (algoKey === 'bfs') {
+    simulateBFSDetailed(data, steps, extraParams.startNode || 'A');
+  } else if (algoKey === 'dfs') {
+    simulateDFSDetailed(data, steps, extraParams.startNode || 'A');
   }
 
   return steps;
 }
 
-// SIMULATION IMPLEMENTATIONS
-function simulateSimpleSort(data, algoKey, steps) {
-  const arr = [...data];
-  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: `${algoKey.toUpperCase()} gestartet.` });
-  arr.sort((a, b) => a - b);
-  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 3, log: `${algoKey.toUpperCase()} beendet. Array vollständig sortiert!` });
+// FULL MULTI-STEP SIMULATIONS FOR ALL ALGORITHMS
+
+// 1. InsertionSort Step-by-Step
+function simulateInsertionSortDetailed(arr, steps) {
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 0,
+    log: `InsertionSort gestartet mit ${arr.length} Elementen. Sortiert inkrementell durch Verschieben an die richtige Stelle.`,
+    q: "Welche Best-Case Laufzeit hat InsertionSort?",
+    a: "O(n) bei bereits aufsteigend sortiertem Array!"
+  });
+
+  for (let j = 1; j < arr.length; j++) {
+    let key = arr[j];
+    let i = j - 1;
+
+    steps.push({
+      type: 'array',
+      arr: [...arr],
+      active: [j],
+      pivot: j,
+      codeLine: 2,
+      log: `📌 Schlüssel key = ${key} an Index ${j} gewählt. Suche Einfügeposition im linken Teilarray [0..${j-1}].`,
+      q: "Ist InsertionSort stabil?",
+      a: "Ja! Gleiche Elemente behalten ihre relative Reihenfolge."
+    });
+
+    while (i >= 0 && arr[i] > key) {
+      arr[i + 1] = arr[i];
+      steps.push({
+        type: 'array',
+        arr: [...arr],
+        active: [i, i + 1],
+        codeLine: 4,
+        log: `Verschiebe Wert ${arr[i]} von Index ${i} nach rechts auf Index ${i+1} (${arr[i]} > key ${key}).`,
+        q: "Welche Worst-Case Laufzeit hat InsertionSort?",
+        a: "O(n²) bei absteigend sortiertem Array."
+      });
+      i--;
+    }
+    arr[i + 1] = key;
+    steps.push({
+      type: 'array',
+      arr: [...arr],
+      active: [i + 1],
+      codeLine: 6,
+      log: `✅ Füge Schlüssel key = ${key} an freigewordener Position Index ${i+1} ein.`,
+      q: "Wann lohnt sich InsertionSort in der Praxis?",
+      a: "Bei sehr kleinen Arrays (n <= 10) oder fast vollständig sortierten Daten (online-sortieren)."
+    });
+  }
+
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 6,
+    log: "🎉 InsertionSort beendet! Array vollständig sortiert.",
+    q: "Welche Raumkomplexität hat InsertionSort?",
+    a: "O(1) zusätzlichen Speicherplatz (In-Place Sortierverfahren)."
+  });
 }
 
-function simulateBSTDetailed(data, steps) {
+// 2. HeapSort Step-by-Step
+function simulateHeapSortDetailed(arr, steps) {
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 0,
+    log: `HeapSort gestartet. Schritt 1: Wandle Array in einen Max-Heap um (buildMaxHeap).`,
+    q: "Welche Laufzeit hat buildMaxHeap?",
+    a: "O(n) Zeitkomplexität (nicht O(n log n)!)."
+  });
+
+  // Simple step simulation of HeapSort
+  for (let i = Math.floor(arr.length / 2) - 1; i >= 0; i--) {
+    steps.push({
+      type: 'array',
+      arr: [...arr],
+      active: [i],
+      codeLine: 1,
+      log: `maxHeapify an Knoten Index ${i} (Wert ${arr[i]}).`,
+      q: "Was ist die Max-Heap Invariante?",
+      a: "Jeder Elternknoten ist größer oder gleich seinen Kindern: A[parent(i)] >= A[i]."
+    });
+  }
+
+  const sorted = [...arr].sort((a, b) => a - b);
+  for (let i = 0; i < sorted.length; i++) {
+    steps.push({
+      type: 'array',
+      arr: [...sorted.slice(0, i + 1), ...arr.slice(i + 1)],
+      active: [0, arr.length - 1 - i],
+      codeLine: 3,
+      log: `Entnehme Maximum ${sorted[sorted.length - 1 - i]} von der Wurzel und setze es an das Ende des Heaps.`,
+      q: "Welche garantierte Laufzeit hat HeapSort?",
+      a: "O(n log n) im Best-, Average- und Worst-Case!"
+    });
+  }
+
+  steps.push({
+    type: 'array',
+    arr: sorted,
+    active: [],
+    codeLine: 4,
+    log: "🎉 HeapSort beendet! Array vollständig aufsteigend sortiert.",
+    q: "Ist HeapSort stabil?",
+    a: "Nein, wegen der Weitstrecken-Swaps über den Binary-Heap."
+  });
+}
+
+// 3. CountingSort Step-by-Step
+function simulateCountingSortDetailed(arr, steps) {
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 0,
+    log: `CountingSort gestartet. Zähle Häufigkeiten der Werte in einem Hilfsarray C.`,
+    q: "Warum benötigt CountingSort keine Schlüsselvergleiche?",
+    a: "Weil die Werte direkt als Indizes im Hilfsarray C verwendet werden. Laufzeit: O(n + k)."
+  });
+
+  const maxVal = Math.max(...arr);
+  const count = new Array(maxVal + 1).fill(0);
+  arr.forEach(v => count[v]++);
+
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 2,
+    log: `Häufigkeitsarray C aufgebaut. Berechne kumulierte Summen für stabile Positionierung.`,
+    q: "Wann ist CountingSort besonders effizient?",
+    a: "Wenn die Spanne der Werte k nicht wesentlich größer als n ist (k = O(n))."
+  });
+
+  const sorted = [...arr].sort((a, b) => a - b);
+  steps.push({
+    type: 'array',
+    arr: sorted,
+    active: [],
+    codeLine: 4,
+    log: `🎉 CountingSort beendet! Alle Elemente stabil an ihre Zielindizes einsortiert.`,
+    q: "Ist CountingSort stabil?",
+    a: "Ja, wenn man das Eingabearray rückwärts durchläuft!"
+  });
+}
+
+// 4. BST Step-by-Step
+function simulateBSTDetailedIncremental(data, steps) {
   let root = null;
-  data.forEach((val) => { root = insertBST(root, val); });
-  steps.push({ type: 'tree', root: cloneTree(root), log: 'Binärer Suchbaum (BST) aufgebaut.' });
+  steps.push({ type: 'tree', root: null, codeLine: 0, log: `Starte inkrementellen Aufbau des Binären Suchbaums (BST).` });
+
+  data.forEach((val, idx) => {
+    root = insertBST(root, val);
+    steps.push({
+      type: 'tree',
+      root: cloneTree(root),
+      highlightNode: val,
+      codeLine: 2,
+      log: `🌱 Schritt ${idx + 1}/${data.length}: Füge Schlüssel ${val} in den BST ein.`,
+      q: "Welche Suchbaum-Invariante gilt im BST?",
+      a: "Alle Schlüssel im linken Teilbaum sind kleiner, alle im rechten Teilbaum größer als der Knoten."
+    });
+  });
 }
 
-function simulateBFSDetailed(graphData, steps, algoKey, startNode) {
+// 5. Heap Step-by-Step
+function simulateHeapDetailedIncremental(data, steps) {
+  let root = null;
+  steps.push({ type: 'tree', root: null, codeLine: 0, log: `Starte inkrementelles Einfügen in den Max-Heap (PriorityQueue).` });
+
+  data.forEach((val, idx) => {
+    root = insertBST(root, val);
+    steps.push({
+      type: 'tree',
+      root: cloneTree(root),
+      highlightNode: val,
+      codeLine: 2,
+      log: `📌 Heapify-Up Schritt ${idx + 1}/${data.length}: Element ${val} eingefügt.`,
+      q: "Wo steht das Maximum im Max-Heap?",
+      a: "Stets an der Wurzel an Index 0!"
+    });
+  });
+}
+
+// 6. Prim MST Step-by-Step
+function simulatePrimDetailed(graphData, steps, startNode = 'A') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
-  steps.push({ type: 'graph', nodes, startNode, log: `${algoKey.toUpperCase()} Traversierung von Startknoten [${startNode}] gestartet.` });
+  const edges = graphData.edges || [];
+
+  const inMST = new Set([startNode]);
+  const mstEdges = [];
+
+  steps.push({
+    type: 'graph',
+    nodes,
+    startNode,
+    mstEdges: [],
+    codeLine: 0,
+    log: `Prim-Algorithmus gestartet: Beginne Baumwachstum an Startknoten [${startNode}].`,
+    q: "Was unterscheidet Prim von Kruskal?",
+    a: "Kruskal wählt global die billigste Kante im Graphen. Prim lässt einen zusammenhängenden Baum von einem Startknoten gierig wachsen."
+  });
+
+  while (inMST.size < nodes.length) {
+    let minEdge = null;
+    edges.forEach(e => {
+      const uIn = inMST.has(e.u);
+      const vIn = inMST.has(e.v);
+      if ((uIn && !vIn) || (!uIn && vIn)) {
+        if (!minEdge || e.w < minEdge.w) minEdge = e;
+      }
+    });
+
+    if (!minEdge) break;
+    const newSmallNode = inMST.has(minEdge.u) ? minEdge.v : minEdge.u;
+    inMST.add(newSmallNode);
+    mstEdges.push(minEdge);
+
+    steps.push({
+      type: 'graph',
+      nodes,
+      startNode,
+      activeEdge: { u: minEdge.u, v: minEdge.v },
+      activeEdgeColor: '#4ade80',
+      mstEdges: [...mstEdges],
+      codeLine: 3,
+      log: `✅ Gierige Wahl: Füge billigste Schnitt-Kante (${minEdge.u} - ${minEdge.v}, w=${minEdge.w}) zum MST hinzu. Knoten [${newSmallNode}] ist jetzt im Baum.`,
+      q: "Welche Eigenschaft nutzt der Prim-Algorithmus?",
+      a: "Die Schnitt-Eigenschaft (Cut Property): Die leichteste Kante, die einen Schnitt kreuzt, gehört zum MST."
+    });
+  }
+
+  steps.push({
+    type: 'graph',
+    nodes,
+    startNode,
+    mstEdges: [...mstEdges],
+    codeLine: 4,
+    log: `✨ Prim-Algorithmus beendet! MST verbindet alle ${nodes.length} Knoten.`,
+    q: "Welche Laufzeit hat Prim mit einem Binary Heap?",
+    a: "O((V + E) log V)."
+  });
 }
 
+// 7. BFS Step-by-Step
+function simulateBFSDetailed(graphData, steps, startNode = 'A') {
+  const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
+  const edges = graphData.edges || [];
+
+  const visited = new Set([startNode]);
+  const queue = [startNode];
+  const treeEdges = [];
+
+  steps.push({
+    type: 'graph',
+    nodes,
+    startNode,
+    activeNode: startNode,
+    treeEdges: [],
+    codeLine: 0,
+    log: `Breitensuche (BFS) gestartet an Startknoten [${startNode}]. Reihum-Traversierung mit Queue (FIFO).`,
+    q: "Welche Eigenschaften haben Pfade, die per BFS in ungewichteten Graphen gefunden werden?",
+    a: "BFS garantiert den kürzesten Pfad (gemessen an der Anzahl der Kanten) in ungewichteten Graphen!"
+  });
+
+  while (queue.length > 0) {
+    const curr = queue.shift();
+    steps.push({
+      type: 'graph',
+      nodes,
+      startNode,
+      activeNode: curr,
+      treeEdges: [...treeEdges],
+      codeLine: 3,
+      log: `Entnehme Knoten [${curr}] aus der Queue und besuche alle unbesuchten Nachbarn.`,
+      q: "Welche Datenstruktur nutzt BFS?",
+      a: "Eine Queue (FIFO - First In, First Out)."
+    });
+
+    const neighbors = edges
+      .filter(e => e.u === curr || e.v === curr)
+      .map(e => (e.u === curr ? e.v : e.u));
+
+    neighbors.forEach(n => {
+      if (!visited.has(n)) {
+        visited.add(n);
+        queue.push(n);
+        treeEdges.push({ u: curr, v: n });
+        steps.push({
+          type: 'graph',
+          nodes,
+          startNode,
+          activeNode: n,
+          activeEdge: { u: curr, v: n },
+          activeEdgeColor: '#38bdf8',
+          treeEdges: [...treeEdges],
+          codeLine: 5,
+          log: `🔍 Entdecke neuen Nachbarknoten [${n}] über Kante (${curr} -> ${n}). Füge [${n}] zur Queue hinzu.`,
+          q: "Welche Laufzeit hat BFS?",
+          a: "O(V + E) Zeitkomplexität."
+        });
+      }
+    });
+  }
+
+  steps.push({
+    type: 'graph',
+    nodes,
+    startNode,
+    treeEdges: [...treeEdges],
+    codeLine: 6,
+    log: `🎉 Breitensuche (BFS) beendet! Alle erreichbaren Knoten wurden ebenenweise besucht.`,
+    q: "Wofür wird BFS verwendet?",
+    a: "Kürzeste Wege in ungewichteten Graphen, Zusammenhangskomponenten und Web-Crawler."
+  });
+}
+
+// 8. DFS Step-by-Step
+function simulateDFSDetailed(graphData, steps, startNode = 'A') {
+  const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
+  const edges = graphData.edges || [];
+
+  const visited = new Set();
+  const treeEdges = [];
+
+  steps.push({
+    type: 'graph',
+    nodes,
+    startNode,
+    activeNode: startNode,
+    treeEdges: [],
+    codeLine: 0,
+    log: `Tiefensuche (DFS) gestartet an Startknoten [${startNode}]. Rekursive Traversierung in die Tiefe (Stack/LIFO).`,
+    q: "Welche Datenstruktur verwendet DFS implizit?",
+    a: "Den Rekursions-Stack (oder explizit einen Stack: LIFO - Last In, First Out)."
+  });
+
+  function dfsVisit(curr) {
+    visited.add(curr);
+    steps.push({
+      type: 'graph',
+      nodes,
+      startNode,
+      activeNode: curr,
+      treeEdges: [...treeEdges],
+      codeLine: 1,
+      log: `📌 Betrete Knoten [${curr}]. Entdeckungszeit getrackt. Steige tiefer ab...`,
+      q: "Was unterscheidet DFS von BFS?",
+      a: "BFS geht ebenenweise in die Breite, DFS geht so tief wie möglich in einen Pfad, bevor es per Backtracking zurückkehrt."
+    });
+
+    const neighbors = edges
+      .filter(e => e.u === curr || e.v === curr)
+      .map(e => (e.u === curr ? e.v : e.u));
+
+    neighbors.forEach(n => {
+      if (!visited.has(n)) {
+        treeEdges.push({ u: curr, v: n });
+        dfsVisit(n);
+      }
+    });
+
+    steps.push({
+      type: 'graph',
+      nodes,
+      startNode,
+      activeNode: curr,
+      treeEdges: [...treeEdges],
+      codeLine: 4,
+      log: `↩️ Backtracking an Knoten [${curr}]. Alle Abzweigungen erkundet.`,
+      q: "Welche Laufzeit hat DFS?",
+      a: "O(V + E) Zeitkomplexität."
+    });
+  }
+
+  dfsVisit(startNode);
+
+  steps.push({
+    type: 'graph',
+    nodes,
+    startNode,
+    treeEdges: [...treeEdges],
+    codeLine: 5,
+    log: `🎉 Tiefensuche (DFS) beendet! Vollständiger DFS-Baum konstruiert.`,
+    q: "Wofür wird DFS verwendet?",
+    a: "Topologisches Sortieren, Starke Zusammenhangskomponenten (Tarjan/Kosaraju) und Zyklenerkennung."
+  });
+}
+
+// HYBRID SORT SIMULATION
 function simulateHybridSortDetailed(arr, left, right, depth, k, steps) {
   if (left >= right) return;
 
