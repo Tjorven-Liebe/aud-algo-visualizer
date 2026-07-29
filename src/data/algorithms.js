@@ -308,11 +308,12 @@ export function getDefaultData(algoKey) {
     case 'countingsort':
       return [170, 45, 75, 90, 802, 24, 2, 66];
     case 'avl':
-    case 'splay':
     case 'rbtree':
     case 'bst':
     case 'heap':
       return [40, 20, 60, 10, 30, 25];
+    case 'splay':
+      return [10, 60, 20, 40];
     case 'dijkstra':
     case 'bellmanford':
     case 'kruskal':
