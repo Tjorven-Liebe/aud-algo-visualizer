@@ -1,4 +1,4 @@
-// Canonical Educational Datasets & Simulation Engine with Guaranteed Reattached Double Rotations
+// Canonical Educational Datasets & Graph Target Path Finder Engine
 
 export const ALGORITHM_DATA = {
   hybridsort: {
@@ -249,9 +249,9 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
   } else if (algoKey === 'rbtree') {
     simulateRBDetailedIncremental(data, steps);
   } else if (algoKey === 'dijkstra') {
-    simulateDijkstraDetailed(data, steps);
+    simulateDijkstraDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
   } else if (algoKey === 'bellmanford') {
-    simulateBellmanFordDetailed(data, steps);
+    simulateBellmanFordDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
   } else if (algoKey === 'kruskal') {
     simulateKruskalDetailed(data, steps);
   }
@@ -428,7 +428,7 @@ function simulateRadixSortDetailed(arr, steps) {
     buckets2[digit].push(pass1Arr[i]);
     steps.push({
       type: 'array',
-      arr: [...pass1Arr],
+      arr: [...pass2Arr],
       active: [i],
       codeLine: 2,
       log: `Durchlauf 2 (Zehnerstelle): Ordne Element ${pass1Arr[i]} in Bucket [${digit}] ein.`,
@@ -452,7 +452,7 @@ function simulateRadixSortDetailed(arr, steps) {
 }
 
 // ----------------------------------------------------
-// FULL TREE SNAPSHOT SIMULATION (ALWAYS REATTACHED FULL TREES)
+// FULL TREE SNAPSHOT SIMULATION
 // ----------------------------------------------------
 function simulateAVLDetailedIncremental(data, steps) {
   const treeContainer = { root: null };
@@ -556,7 +556,7 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
     a: "BF = h(linkes Kind) - h(rechtes Kind). Ist |BF| > 1, liegt ein Ungleichgewicht vor."
   });
 
-  // 1. LINKS-LINKS FALL (Einfache Rechts-Rotation)
+  // 1. LINKS-LINKS FALL
   if (balance > 1 && val < node.left.val) {
     steps.push({
       type: 'tree',
@@ -575,7 +575,7 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
     return newSubtreeRoot;
   }
 
-  // 2. RECHTS-RECHTS FALL (Einfache Links-Rotation)
+  // 2. RECHTS-RECHTS FALL
   if (balance < -1 && val > node.right.val) {
     steps.push({
       type: 'tree',
@@ -594,7 +594,7 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
     return newSubtreeRoot;
   }
 
-  // 3. LINKS-RECHTS FALL (Doppelrotation: ERST Links am Kind, DANN Rechts am Vater!)
+  // 3. LINKS-RECHTS FALL
   if (balance > 1 && val > node.left.val) {
     steps.push({
       type: 'tree',
@@ -608,7 +608,6 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
       a: "Weil ein Zick-Zack-Muster vorliegt. Eine einfache Rotation würde das Ungleichgewicht nur auf die andere Seite spiegeln."
     });
 
-    // TEIL 1: Links-Rotation am linken Kind node.left & DIREKTES RE-ATTACHMENT!
     const childVal = node.left.val;
     node.left = rotateLeft(node.left);
     updateTreeHeights(node);
@@ -625,14 +624,13 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
       a: "Das linke Kind wird nach links rotiert, wodurch das Zick-Zack-Muster in ein gerades Links-Links-Muster überführt wird."
     });
 
-    // TEIL 2: Rechts-Rotation am Vaterknoten node
     const newSubtreeRoot = rotateRight(node);
     if (treeContainer.root === node) treeContainer.root = newSubtreeRoot;
 
     return newSubtreeRoot;
   }
 
-  // 4. RECHTS-LINKS FALL (Doppelrotation: ERST Rechts am Kind, DANN Links am Vater!)
+  // 4. RECHTS-LINKS FALL
   if (balance < -1 && val < node.right.val) {
     steps.push({
       type: 'tree',
@@ -646,7 +644,6 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
       a: "Wenn ein Knoten im linken Teilbaum des rechten Kindes eingefügt wird (Zag-Zig-Muster)."
     });
 
-    // TEIL 1: Rechts-Rotation am rechten Kind node.right & DIREKTES RE-ATTACHMENT!
     const childVal = node.right.val;
     node.right = rotateRight(node.right);
     updateTreeHeights(node);
@@ -663,7 +660,6 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
       a: "Das rechte Kind wird nach rechts rotiert, sodass ein gerades Rechts-Rechts-Muster entsteht."
     });
 
-    // TEIL 2: Links-Rotation am Vaterknoten node
     const newSubtreeRoot = rotateLeft(node);
     if (treeContainer.root === node) treeContainer.root = newSubtreeRoot;
 
@@ -781,28 +777,47 @@ function simulateRBDetailedIncremental(data, steps) {
   });
 }
 
-function simulateDijkstraDetailed(graphData, steps) {
+// ----------------------------------------------------
+// GRAPH SIMULATION WITH TARGET NODE & SHORTEST PATH FINDER
+// ----------------------------------------------------
+function simulateDijkstraDetailed(graphData, steps, startNode = 'A', targetNode = 'F') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = graphData.edges || [];
 
+  // Fallbacks if start/target not in node list
+  if (!nodes.includes(startNode)) startNode = nodes[0];
+  if (!nodes.includes(targetNode)) targetNode = nodes[nodes.length - 1];
+
   const distances = {};
+  const parentNode = {};
   const parentEdge = {};
   nodes.forEach(n => distances[n] = '∞');
-  const startNode = nodes[0];
   distances[startNode] = 0;
 
-  function getTreeEdges() { return Object.values(parentEdge); }
+  function getTargetShortestPathEdges() {
+    const pathEdges = [];
+    let curr = targetNode;
+    while (curr && parentNode[curr]) {
+      const p = parentNode[curr];
+      const e = parentEdge[curr];
+      if (e) pathEdges.unshift(e);
+      curr = p;
+    }
+    return pathEdges;
+  }
 
   steps.push({
     type: 'graph',
     nodes: nodes,
+    startNode: startNode,
+    targetNode: targetNode,
     activeNode: startNode,
     distances: { ...distances },
-    treeEdges: getTreeEdges(),
+    treeEdges: [],
     codeLine: 1,
-    log: `Dijkstra initialisiert für Graphen mit ${nodes.length} Knoten (${nodes.join(', ')}) und ${edges.length} Kanten. Startknoten: ${startNode} (dist[${startNode}]=0). PriorityQueue: [${startNode}]`,
+    log: `Dijkstra initialisiert für Suche von Startknoten [${startNode}] zu ZIELKNOTEN [${targetNode}]. Startdistanz dist[${startNode}]=0. PriorityQueue: [${startNode}]`,
     q: "Warum funktioniert Dijkstra nicht bei negativen Kantengewichten?",
-    a: "Dijkstra arbeitet greedy. Sobald ein Knoten aus der PriorityQueue entnommen wird, gilt seine Distanz als final."
+    a: "Dijkstra arbeitet greedy. Sobald ein Knoten aus der PriorityQueue entnommen wird, gilt seine bisherige Distanz als final."
   });
 
   const visited = new Set();
@@ -814,17 +829,25 @@ function simulateDijkstraDetailed(graphData, steps) {
     if (visited.has(curr)) continue;
     visited.add(curr);
 
+    const isTargetReached = curr === targetNode;
+
     steps.push({
       type: 'graph',
       nodes: nodes,
+      startNode: startNode,
+      targetNode: targetNode,
       activeNode: curr,
       distances: { ...distances },
-      treeEdges: getTreeEdges(),
+      treeEdges: getTargetShortestPathEdges(),
       codeLine: 3,
-      log: `Entnehme Knoten ${curr} mit minimaler Distanz dist[${curr}] = ${distances[curr]} aus der PriorityQueue. Markiere ${curr} als FINALSORTIERT.`,
+      log: isTargetReached
+        ? `🎯 ZIELKNOTEN [${targetNode}] aus PriorityQueue entnommen! Minimaler Pfad gefunden mit Gesamtdistanz d[${targetNode}] = ${distances[targetNode]}.`
+        : `Entnehme Knoten ${curr} mit minimaler Distanz dist[${curr}] = ${distances[curr]} aus der PriorityQueue. Markiere ${curr} als FINALSORTIERT.`,
       q: "Welche Datenstruktur wird für die PriorityQueue verwendet?",
       a: "Ein Min-Heap (Binary Heap), der das Minimum in O(log V) ausgibt."
     });
+
+    if (isTargetReached) break;
 
     const currEdges = edges.filter(e => e.u === curr || e.v === curr);
     currEdges.forEach(e => {
@@ -836,16 +859,19 @@ function simulateDijkstraDetailed(graphData, steps) {
 
         if (oldDist === '∞' || newDist < oldDist) {
           distances[neighbor] = newDist;
+          parentNode[neighbor] = curr;
           parentEdge[neighbor] = { u: curr, v: neighbor, w: e.w };
           pq.push(neighbor);
 
           steps.push({
             type: 'graph',
             nodes: nodes,
+            startNode: startNode,
+            targetNode: targetNode,
             activeNode: neighbor,
             activeEdge: { u: curr, v: neighbor },
             activeEdgeColor: '#f43f5e',
-            treeEdges: getTreeEdges(),
+            treeEdges: getTargetShortestPathEdges(),
             distances: { ...distances },
             codeLine: 4,
             log: `💥 Kante (${curr} ➔ ${neighbor}, w=${e.w}) wird RELAXIERT! ${currDist} + ${e.w} = ${newDist} < ${oldDist} ➔ dist[${neighbor}] = ${newDist}`,
@@ -856,10 +882,12 @@ function simulateDijkstraDetailed(graphData, steps) {
           steps.push({
             type: 'graph',
             nodes: nodes,
+            startNode: startNode,
+            targetNode: targetNode,
             activeNode: neighbor,
             activeEdge: { u: curr, v: neighbor },
             activeEdgeColor: '#f59e0b',
-            treeEdges: getTreeEdges(),
+            treeEdges: getTargetShortestPathEdges(),
             distances: { ...distances },
             codeLine: 4,
             log: `🔍 Prüfe Kante (${curr} ➔ ${neighbor}, w=${e.w}): ${currDist} + ${e.w} = ${newDist} >= ${oldDist} ➔ Keine Anpassung nötig.`,
@@ -871,37 +899,59 @@ function simulateDijkstraDetailed(graphData, steps) {
     });
   }
 
+  // Construct final path string
+  const targetPath = getTargetShortestPathEdges();
+  const pathNodes = [startNode];
+  targetPath.forEach(e => pathNodes.push(e.v));
+
   steps.push({
     type: 'graph',
     nodes: nodes,
-    treeEdges: getTreeEdges(),
+    startNode: startNode,
+    targetNode: targetNode,
+    treeEdges: targetPath,
     distances: { ...distances },
     codeLine: 6,
-    log: `✅ Dijkstra beendet! Der kürzeste Pfadbaum (leuchtend grün) wurde berechnet!`,
+    log: `🎯 ZIEL ERREICHT! Kürzester Pfad von [${startNode}] nach ZIEL [${targetNode}]: ${pathNodes.join(' ➔ ')} (Gesamtdistanz d = ${distances[targetNode]})`,
     q: "Welche Laufzeit hat Dijkstra mit einem Binary Heap?",
     a: "O((V + E) log V)."
   });
 }
 
-function simulateBellmanFordDetailed(graphData, steps) {
+function simulateBellmanFordDetailed(graphData, steps, startNode = 'A', targetNode = 'F') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = graphData.edges || [];
 
+  if (!nodes.includes(startNode)) startNode = nodes[0];
+  if (!nodes.includes(targetNode)) targetNode = nodes[nodes.length - 1];
+
   const distances = {};
+  const parentNode = {};
   const parentEdge = {};
   nodes.forEach(n => distances[n] = '∞');
-  const startNode = nodes[0];
   distances[startNode] = 0;
 
-  function getTreeEdges() { return Object.values(parentEdge); }
+  function getTargetShortestPathEdges() {
+    const pathEdges = [];
+    let curr = targetNode;
+    while (curr && parentNode[curr]) {
+      const p = parentNode[curr];
+      const e = parentEdge[curr];
+      if (e) pathEdges.unshift(e);
+      curr = p;
+    }
+    return pathEdges;
+  }
 
   steps.push({
     type: 'graph',
     nodes: nodes,
+    startNode: startNode,
+    targetNode: targetNode,
     distances: { ...distances },
-    treeEdges: getTreeEdges(),
+    treeEdges: [],
     codeLine: 0,
-    log: `Bellman-Ford gestartet: Führe V-1 (${nodes.length - 1}) Relaxations-Runden über alle ${edges.length} Kanten aus.`,
+    log: `Bellman-Ford gestartet: Suche Pfad von Start [${startNode}] zu ZIEL [${targetNode}]. Führe V-1 Runden aus.`,
     q: "Warum reichen V-1 Runden beim Bellman-Ford Algorithmus aus?",
     a: "Ein einfacher Pfad in einem Graphen mit V Knoten hat maximal V-1 Kanten."
   });
@@ -915,56 +965,41 @@ function simulateBellmanFordDetailed(graphData, steps) {
 
         if (oldDist === '∞' || newDist < oldDist) {
           distances[e.v] = newDist;
+          parentNode[e.v] = e.u;
           parentEdge[e.v] = { u: e.u, v: e.v, w: e.w };
           steps.push({
             type: 'graph',
             nodes: nodes,
+            startNode: startNode,
+            targetNode: targetNode,
             activeNode: e.v,
             activeEdge: { u: e.u, v: e.v },
             activeEdgeColor: '#f43f5e',
-            treeEdges: getTreeEdges(),
+            treeEdges: getTargetShortestPathEdges(),
             distances: { ...distances },
             codeLine: 1,
             log: `💥 Runde ${pass} (Kante ${idx+1}/${edges.length}: ${e.u}->${e.v}, w=${e.w}): ${uDist} + ${e.w} = ${newDist} < ${oldDist} -> dist[${e.v}] = ${newDist}`,
             q: "Kann Bellman-Ford mit negativen Kantengewichten umgehen?",
             a: "Ja! Er berechnet kürzeste Pfade auch bei negativen Kanten und findet negative Zyklen."
           });
-        } else {
-          steps.push({
-            type: 'graph',
-            nodes: nodes,
-            activeEdge: { u: e.u, v: e.v },
-            activeEdgeColor: '#334155',
-            treeEdges: getTreeEdges(),
-            distances: { ...distances },
-            codeLine: 1,
-            log: `🔍 Runde ${pass} (Kante ${idx+1}/${edges.length}: ${e.u}->${e.v}, w=${e.w}): keine Verkürzung.`,
-            q: "Was unterscheidet Bellman-Ford von Dijkstra?",
-            a: "Bellman-Ford arbeitet nicht greedy, sondern relaxiert in V-1 Runden systematisch ALLE Kanten."
-          });
         }
       }
     });
   }
 
-  steps.push({
-    type: 'graph',
-    nodes: nodes,
-    treeEdges: getTreeEdges(),
-    distances: { ...distances },
-    codeLine: 3,
-    log: "10. Runde (Prüfrunde V): Überprüfe alle Kanten auf negative Zyklen...",
-    q: "Wie erkennt Bellman-Ford einen negativen Zyklus?",
-    a: "Wenn in der V-ten Runde eine Kante noch weiter relaxiert werden könnte (dist[u] + w < dist[v]), existiert ein negativer Zyklus!"
-  });
+  const targetPath = getTargetShortestPathEdges();
+  const pathNodes = [startNode];
+  targetPath.forEach(e => pathNodes.push(e.v));
 
   steps.push({
     type: 'graph',
     nodes: nodes,
-    treeEdges: getTreeEdges(),
+    startNode: startNode,
+    targetNode: targetNode,
+    treeEdges: targetPath,
     distances: { ...distances },
     codeLine: 4,
-    log: "Kein negativer Zyklus vorhanden! Kürzeste Pfade wurden korrekt berechnet.",
+    log: `🎯 Bellman-Ford beendet! Kürzester Pfad von [${startNode}] nach ZIEL [${targetNode}]: ${pathNodes.join(' ➔ ')} (Distanz d = ${distances[targetNode]})`,
     q: "Welche Laufzeit hat Bellman-Ford?",
     a: "O(V · E), da V-1 Runden über alle E Kanten ausgeführt werden."
   });

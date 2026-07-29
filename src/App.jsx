@@ -16,6 +16,10 @@ export default function App() {
   const [speedVal, setSpeedVal] = useState(5);
   const [kParam, setKParam] = useState(2);
 
+  // Graph Start & Target Node Selector State
+  const [startNode, setStartNode] = useState('A');
+  const [targetNode, setTargetNode] = useState('F');
+
   // Galles Style Input States
   const [insertVal, setInsertVal] = useState('');
   const [deleteVal, setDeleteVal] = useState('');
@@ -29,7 +33,7 @@ export default function App() {
   useEffect(() => {
     const fixedData = getDefaultData(algoKey);
     setRawData(fixedData);
-    const generatedSteps = generateAlgoSteps(algoKey, fixedData, { k: kParam });
+    const generatedSteps = generateAlgoSteps(algoKey, fixedData, { k: kParam, startNode, targetNode });
     setSteps(generatedSteps);
     setStepIndex(0);
   }, []);
@@ -76,7 +80,14 @@ export default function App() {
     setAlgoKey(defaultAlgo);
     const fixedData = getDefaultData(defaultAlgo);
     setRawData(fixedData);
-    const newSteps = generateAlgoSteps(defaultAlgo, fixedData, { k: kParam });
+
+    const nodesList = fixedData && fixedData.nodes ? fixedData.nodes : ['A', 'B', 'C', 'D', 'E', 'F'];
+    const newStart = nodesList[0];
+    const newTarget = nodesList[nodesList.length - 1];
+    setStartNode(newStart);
+    setTargetNode(newTarget);
+
+    const newSteps = generateAlgoSteps(defaultAlgo, fixedData, { k: kParam, startNode: newStart, targetNode: newTarget });
     setSteps(newSteps);
     setStepIndex(0);
   };
@@ -87,7 +98,24 @@ export default function App() {
     setIsPlaying(false);
     const fixedData = getDefaultData(newAlgo);
     setRawData(fixedData);
-    const newSteps = generateAlgoSteps(newAlgo, fixedData, { k: kParam });
+
+    const nodesList = fixedData && fixedData.nodes ? fixedData.nodes : ['A', 'B', 'C', 'D', 'E', 'F'];
+    const newStart = nodesList[0];
+    const newTarget = nodesList[nodesList.length - 1];
+    setStartNode(newStart);
+    setTargetNode(newTarget);
+
+    const newSteps = generateAlgoSteps(newAlgo, fixedData, { k: kParam, startNode: newStart, targetNode: newTarget });
+    setSteps(newSteps);
+    setStepIndex(0);
+  };
+
+  // Graph Start or Target Node Change
+  const handleGraphNodeChange = (newStart, newTarget) => {
+    setStartNode(newStart);
+    setTargetNode(newTarget);
+    setIsPlaying(false);
+    const newSteps = generateAlgoSteps(algoKey, rawData, { k: kParam, startNode: newStart, targetNode: newTarget });
     setSteps(newSteps);
     setStepIndex(0);
   };
@@ -97,7 +125,17 @@ export default function App() {
     setIsPlaying(false);
     const newData = generateRandomData(category);
     setRawData(newData);
-    const newSteps = generateAlgoSteps(algoKey, newData, { k: kParam });
+
+    let newStart = startNode;
+    let newTarget = targetNode;
+    if (category === 'graph' && newData && newData.nodes) {
+      newStart = newData.nodes[0];
+      newTarget = newData.nodes[newData.nodes.length - 1];
+      setStartNode(newStart);
+      setTargetNode(newTarget);
+    }
+
+    const newSteps = generateAlgoSteps(algoKey, newData, { k: kParam, startNode: newStart, targetNode: newTarget });
     setSteps(newSteps);
     setStepIndex(0);
   };
@@ -173,6 +211,7 @@ export default function App() {
 
   const currentStep = steps[stepIndex] || null;
   const currentAlgoDef = ALGORITHM_DATA[algoKey] || {};
+  const availableGraphNodes = (rawData && rawData.nodes) || ['A', 'B', 'C', 'D', 'E', 'F'];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: '#090d16' }}>
@@ -231,6 +270,33 @@ export default function App() {
                 )}
               </select>
             </div>
+
+            {/* Graph Start & Target Node Selectors */}
+            {category === 'graph' && algoKey !== 'kruskal' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#38bdf8' }}>🚀 START:</label>
+                  <select
+                    value={startNode}
+                    onChange={(e) => handleGraphNodeChange(e.target.value, targetNode)}
+                    style={{ backgroundColor: '#1e293b', border: '1px solid #0284c7', color: '#fff', padding: '5px 10px', borderRadius: '6px', fontSize: '13px' }}
+                  >
+                    {availableGraphNodes.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b' }}>🎯 ZIEL:</label>
+                  <select
+                    value={targetNode}
+                    onChange={(e) => handleGraphNodeChange(startNode, e.target.value)}
+                    style={{ backgroundColor: '#1e293b', border: '1px solid #d97706', color: '#fff', padding: '5px 10px', borderRadius: '6px', fontSize: '13px' }}
+                  >
+                    {availableGraphNodes.map(n => <option key={n} value={n}>{n}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
 
             {/* Galles Controls: [ Insert ] [ Delete ] [ Find ] */}
             {category === 'tree' && (
@@ -328,7 +394,7 @@ export default function App() {
           />
         </div>
 
-        {/* Draggable Vertical Splitter Handle */}
+        {/* Draggable Resizer Bar */}
         <div
           onMouseDown={handleMouseDownResizer}
           title="Drag to resize sidebar"
@@ -367,9 +433,9 @@ export default function App() {
           <TestatTrainerPanel
             stepIndex={stepIndex}
             totalSteps={steps.length}
-            stepLog={currentStep?.log || 'Klicke auf Start oder verwende [ Insert ], um die Galles-Animation zu starten.'}
-            question={currentStep?.q || 'Welche Eigenschaften besitzt der AVL-Baum?'}
-            answer={currentStep?.a || 'Ein AVL-Baum hält durch automatisches Rotieren nach jedem Einfügen/Löschen die Höhenbalance aufrecht (|BF| <= 1).'}
+            stepLog={currentStep?.log || 'Klicke auf Start oder wähle einen Zielknoten.'}
+            question={currentStep?.q || 'Welche Eigenschaften hat der Dijkstra-Algorithmus?'}
+            answer={currentStep?.a || 'Er berechnet ausgehend von einem Startknoten die kürzesten Pfade zu allen/einem Zielknoten in O((V + E) log V).'}
           />
         </div>
       </main>

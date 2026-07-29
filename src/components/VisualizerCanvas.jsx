@@ -11,7 +11,6 @@ export default function VisualizerCanvas({ currentStep, algoKey, rawData }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
 
-    // Smooth Animation Loop using requestAnimationFrame
     function renderLoop() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -85,17 +84,17 @@ function drawArray(ctx, canvas, step) {
     ctx.fill();
 
     ctx.fillStyle = '#f8fafc';
-    ctx.font = '600 13px Inter, sans-serif';
+    ctx.font = '600 14px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(val, x + barWidth / 2, y - 10);
 
     ctx.fillStyle = '#94a3b8';
-    ctx.font = '10px Fira Code, monospace';
+    ctx.font = '11px Fira Code, monospace';
     ctx.fillText(`[${i}]`, x + barWidth / 2, canvas.height - 60);
   });
 }
 
-// Premium Clean Tree Renderer (No text overlaps, beautifully centered, Galles smooth motion)
+// Premium Clean Tree Renderer
 function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
   const root = step.root;
   if (!root) {
@@ -106,10 +105,8 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
     return;
   }
 
-  // Calculate Layout Coords
   layoutTree(root, canvas.width, 80);
 
-  // Update Smooth Position Interpolation
   function updateNodePositions(node) {
     if (!node) return;
 
@@ -127,7 +124,6 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
 
   updateNodePositions(root);
 
-  // Draw Edges (Glowing Clean Lines)
   function drawEdges(node) {
     if (!node) return;
     const parentPos = nodePosMap[node.val];
@@ -159,7 +155,6 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
 
   let rotationPivotPos = null;
 
-  // Draw Nodes & Badges (Clean Non-Overlapping Pill Badges ABOVE / BELOW Nodes)
   function drawNodes(node) {
     if (!node) return;
     const pos = nodePosMap[node.val];
@@ -196,7 +191,6 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
       ctx.shadowBlur = 16;
     }
 
-    // Node Circle
     ctx.fillStyle = fillColor;
     ctx.strokeStyle = strokeColor;
     ctx.lineWidth = 3.5;
@@ -206,36 +200,33 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
     ctx.stroke();
     ctx.restore();
 
-    // Node Key Text
     ctx.fillStyle = '#f8fafc';
-    ctx.font = '700 15px Inter, sans-serif';
+    ctx.font = '700 16px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.val, pos.currX, pos.currY);
 
-    // Height & Balance Badges (NO OVERLAP: Pill badges placed safely ABOVE and BELOW node!)
     if (algoKey === 'avl' && node.height !== undefined) {
       const balance = (node.left ? node.left.height : 0) - (node.right ? node.right.height : 0);
 
-      // Height Badge (Pill Badge ABOVE Node)
-      const hText = `h = ${node.height}`;
+      // Height Badge ABOVE Node
       ctx.save();
       ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.roundRect(pos.currX - 22, pos.currY - 44, 44, 16, 4);
+      ctx.roundRect(pos.currX - 24, pos.currY - 46, 48, 18, 5);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = '#38bdf8';
-      ctx.font = '600 10px Fira Code, monospace';
+      ctx.font = '600 11px Fira Code, monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(hText, pos.currX, pos.currY - 36);
+      ctx.fillText(`h = ${node.height}`, pos.currX, pos.currY - 37);
       ctx.restore();
 
-      // Balance Factor Badge (Pill Badge BELOW Node)
+      // Balance Factor Badge BELOW Node
       const isUnbalanced = Math.abs(balance) > 1;
       const bColor = isUnbalanced ? '#f43f5e' : '#4ade80';
       const bText = `B = ${balance > 0 ? '+' + balance : balance}`;
@@ -245,15 +236,15 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
       ctx.strokeStyle = bColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.roundRect(pos.currX - 22, pos.currY + 28, 44, 16, 4);
+      ctx.roundRect(pos.currX - 24, pos.currY + 28, 48, 18, 5);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = bColor;
-      ctx.font = '700 10px Fira Code, monospace';
+      ctx.font = '700 11px Fira Code, monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(bText, pos.currX, pos.currY + 36);
+      ctx.fillText(bText, pos.currX, pos.currY + 37);
       ctx.restore();
     }
 
@@ -263,7 +254,6 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
 
   drawNodes(root);
 
-  // Galles Search Pointer Highlight Ring
   if (step.searchPath && step.searchPath.length > 0) {
     const currentSearchVal = step.searchPath[step.searchPath.length - 1];
     const sPos = nodePosMap[currentSearchVal];
@@ -280,13 +270,12 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
     }
   }
 
-  // Draw Graphic Rotation Transformation Overlay (Lecture 04 Diagram)
   if (step.rotationType && rotationPivotPos) {
     drawLectureRotationDiagram(ctx, canvas, step.rotationType, step.rotationPivot);
   }
 }
 
-// Graphic Rotation Transformation Overlay (Vorlesung 04 Diagramm)
+// Rotation Transformation Diagram
 function drawLectureRotationDiagram(ctx, canvas, rotationType, pivotVal) {
   ctx.save();
 
@@ -360,11 +349,14 @@ function drawLectureRotationDiagram(ctx, canvas, rotationType, pivotVal) {
   ctx.restore();
 }
 
-// Drawing Dynamic Graph
+// Drawing Dynamic Graph with Target Node Highlight & Non-overlapping Edge Badges
 function drawGraph(ctx, canvas, step, rawData) {
-  const nodeList = step.nodes || (rawData && rawData.nodes) || ['A', 'B', 'C', 'D', 'E'];
+  const nodeList = step.nodes || (rawData && rawData.nodes) || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = (rawData && rawData.edges) || [];
   const n = nodeList.length;
+
+  const startNode = step.startNode || 'A';
+  const targetNode = step.targetNode || 'F';
 
   const positions = {};
   const centerX = canvas.width / 2;
@@ -384,7 +376,8 @@ function drawGraph(ctx, canvas, step, rawData) {
     return (e1.u === e2.u && e1.v === e2.v) || (e1.u === e2.v && e1.v === e2.u);
   }
 
-  edges.forEach(e => {
+  // Draw Edges (Offset badges to 36% along line so crossing diagonal lines don't obscure badges!)
+  edges.forEach((e, idx) => {
     const u = positions[e.u];
     const v = positions[e.v];
     if (!u || !v) return;
@@ -413,9 +406,9 @@ function drawGraph(ctx, canvas, step, rawData) {
     ctx.save();
     if (isDashed) ctx.setLineDash([6, 6]);
 
-    if (isActive) {
+    if (isActive || isTreeEdge) {
       ctx.shadowColor = strokeColor;
-      ctx.shadowBlur = 12;
+      ctx.shadowBlur = isTreeEdge ? 10 : 16;
     }
 
     ctx.strokeStyle = strokeColor;
@@ -426,10 +419,12 @@ function drawGraph(ctx, canvas, step, rawData) {
     ctx.stroke();
     ctx.restore();
 
-    const midX = (u.x + v.x) / 2;
-    const midY = (u.y + v.y) / 2;
+    // Offset badge to 38% along vector (prevents badges from sitting right on intersection points!)
+    const offsetFactor = (idx % 2 === 0) ? 0.38 : 0.62;
+    const badgeX = u.x + (v.x - u.x) * offsetFactor;
+    const badgeY = u.y + (v.y - u.y) * offsetFactor;
 
-    let badgeBg = '#0f172a';
+    let badgeBg = '#070a12';
     let badgeBorder = '#334155';
     let textColor = '#f59e0b';
 
@@ -438,34 +433,47 @@ function drawGraph(ctx, canvas, step, rawData) {
       badgeBorder = '#fff';
       textColor = '#000';
     } else if (isTreeEdge) {
-      badgeBg = 'rgba(74, 222, 128, 0.2)';
+      badgeBg = '#052e16';
       badgeBorder = '#4ade80';
       textColor = '#4ade80';
     }
 
+    ctx.save();
     ctx.fillStyle = badgeBg;
     ctx.strokeStyle = badgeBorder;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(midX - 14, midY - 11, 28, 22, 6);
+    ctx.roundRect(badgeX - 15, badgeY - 12, 30, 24, 6);
     ctx.fill();
     ctx.stroke();
 
     ctx.fillStyle = textColor;
-    ctx.font = '700 12px Fira Code, monospace';
+    ctx.font = '700 13px Fira Code, monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(e.w, midX, midY + 1);
+    ctx.fillText(e.w, badgeX, badgeY + 1);
+    ctx.restore();
   });
 
+  // Draw Nodes & Target / Start Badges
   nodeList.forEach(key => {
     const pos = positions[key];
     if (!pos) return;
 
     const isActiveNode = step.activeNode === key;
+    const isTarget = key === targetNode;
+    const isStart = key === startNode;
 
     let fillColor = '#1e293b';
     let strokeColor = '#38bdf8';
+
+    if (isTarget) {
+      fillColor = '#78350f';
+      strokeColor = '#f59e0b';
+    } else if (isStart) {
+      fillColor = '#0c4a6e';
+      strokeColor = '#38bdf8';
+    }
 
     if (isActiveNode) {
       fillColor = '#f43f5e';
@@ -473,30 +481,66 @@ function drawGraph(ctx, canvas, step, rawData) {
     }
 
     ctx.save();
-    if (isActiveNode) {
-      ctx.shadowColor = '#f43f5e';
-      ctx.shadowBlur = 12;
+    if (isActiveNode || isTarget) {
+      ctx.shadowColor = isTarget ? '#f59e0b' : '#f43f5e';
+      ctx.shadowBlur = 18;
     }
 
     ctx.fillStyle = fillColor;
     ctx.strokeStyle = strokeColor;
-    ctx.lineWidth = 3.5;
+    ctx.lineWidth = isTarget ? 4.5 : 3.5;
     ctx.beginPath();
-    ctx.arc(pos.x, pos.y, 24, 0, Math.PI * 2);
+    ctx.arc(pos.x, pos.y, 25, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
     ctx.restore();
 
     ctx.fillStyle = '#f8fafc';
-    ctx.font = '700 14px Inter, sans-serif';
+    ctx.font = '700 16px Inter, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(key, pos.x, pos.y);
 
+    // Distance Badge
     if (step.distances && step.distances[key] !== undefined) {
-      ctx.fillStyle = '#4ade80';
-      ctx.font = '600 12px Fira Code, monospace';
-      ctx.fillText(`d=${step.distances[key]}`, pos.x, pos.y + 38);
+      ctx.fillStyle = isTarget ? '#f59e0b' : '#4ade80';
+      ctx.font = '700 13px Fira Code, monospace';
+      ctx.fillText(`d=${step.distances[key]}`, pos.x, pos.y + 42);
+    }
+
+    // Role Badges ABOVE Nodes (🎯 ZIEL / 🚀 START)
+    if (isTarget) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(120, 53, 15, 0.95)';
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(pos.x - 32, pos.y - 48, 64, 18, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = '700 11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🎯 ZIEL', pos.x, pos.y - 39);
+      ctx.restore();
+    } else if (isStart) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(12, 74, 110, 0.95)';
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(pos.x - 32, pos.y - 48, 64, 18, 5);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#38bdf8';
+      ctx.font = '700 11px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('🚀 START', pos.x, pos.y - 39);
+      ctx.restore();
     }
   });
 }
