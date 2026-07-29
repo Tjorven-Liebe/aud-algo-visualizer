@@ -2980,11 +2980,104 @@ function simulateClosedHashDetailed(data, steps) {
 }
 
 function simulateTopoSortDetailed(graphData, steps) {
-  const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E'];
-  steps.push({ type: 'graph', nodes, startNode: 'A', treeEdges: [], codeLine: 0, log: "Topologische Sortierung (USFCA Galles) gestartet: Berechne Eingangsgrade (Indegrees).", q: "Was setzt eine Topologische Sortierung voraus?", a: "Einen gerichteten, azyklischen Graphen (DAG)." });
+  const nodes = (graphData && graphData.nodes) || ['A', 'B', 'C', 'D', 'E', 'F'];
+  const edges = (graphData && graphData.edges) || [
+    { u: 'A', v: 'B', w: 1 },
+    { u: 'A', v: 'C', w: 1 },
+    { u: 'B', v: 'D', w: 1 },
+    { u: 'B', v: 'E', w: 1 },
+    { u: 'C', v: 'D', w: 1 },
+    { u: 'D', v: 'E', w: 1 },
+    { u: 'E', v: 'F', w: 1 }
+  ];
 
-  steps.push({ type: 'graph', nodes, startNode: 'A', activeNode: 'A', treeEdges: [], codeLine: 1, log: "Wähle Knoten A mit Indegree 0. Platziere A an Position 1 der Topo-Ordnung.", q: "Gibt es immer eine eindeutige Topo-Ordnung?", a: "Nein, es kann mehrere gültige Reihenfolgen geben." });
-  steps.push({ type: 'graph', nodes, startNode: 'B', activeNode: 'B', treeEdges: [{ u: 'A', v: 'B' }], codeLine: 2, log: "Entferne Kanten von A. Knoten B hat nun Indegree 0 -> Position 2.", q: "Welche Laufzeit hat TopoSort?", a: "O(V + E) Zeitkomplexität." });
+  // Calculate initial indegrees
+  const indegree = {};
+  nodes.forEach(n => { indegree[n] = 0; });
+  edges.forEach(e => { indegree[e.v] = (indegree[e.v] || 0) + 1; });
+
+  const topoOrder = [];
+
+  steps.push({
+    type: 'toposort',
+    nodes,
+    edges,
+    indegree: { ...indegree },
+    topoOrder: [...topoOrder],
+    codeLine: 0,
+    log: "Topologische Sortierung (USFCA Galles): Berechne Eingangsgrade (Indegrees) aller Knoten.",
+    q: "Was ist ein Eingangsgrad (Indegree)?",
+    a: "Die Anzahl der auf den Knoten gerichteten eingehenden Kanten."
+  });
+
+  // Kahn's Algorithm for TopoSort
+  const queue = nodes.filter(n => indegree[n] === 0);
+
+  steps.push({
+    type: 'toposort',
+    nodes,
+    edges,
+    indegree: { ...indegree },
+    topoOrder: [...topoOrder],
+    activeNode: queue[0],
+    codeLine: 1,
+    log: `📌 Knoten mit Indegree 0 gefunden: Queue = [${queue.join(', ')}].`,
+    q: "Warum wählt TopoSort Knoten mit Indegree 0?",
+    a: "Weil diese Knoten keine ungeklärten Abhängigkeiten haben und somit zuerst ausgeführt werden können."
+  });
+
+  const visitedCount = 0;
+  while (queue.length > 0) {
+    const u = queue.shift();
+    topoOrder.push(u);
+
+    steps.push({
+      type: 'toposort',
+      nodes,
+      edges,
+      indegree: { ...indegree },
+      topoOrder: [...topoOrder],
+      activeNode: u,
+      codeLine: 2,
+      log: `🚀 Entnehme Knoten ${u} aus Queue und füge ihn zur Topologischen Ordnung hinzu.`,
+      q: "Gibt es immer eine eindeutige Topologische Sortierung?",
+      a: "Nein, wenn mehrere Knoten gleichzeitig Indegree 0 haben, existieren mehrere gültige Sortierungen."
+    });
+
+    // Process outgoing edges from u
+    const outgoing = edges.filter(e => e.u === u);
+    for (let e of outgoing) {
+      indegree[e.v] -= 1;
+      const isNowZero = indegree[e.v] === 0;
+      if (isNowZero) queue.push(e.v);
+
+      steps.push({
+        type: 'toposort',
+        nodes,
+        edges,
+        indegree: { ...indegree },
+        topoOrder: [...topoOrder],
+        activeNode: u,
+        activeEdge: e,
+        codeLine: 3,
+        log: `🔥 Reduziere Kante ${e.u} ➔ ${e.v}: Indegree[${e.v}] sinkt auf ${indegree[e.v]}.${isNowZero ? ` Knoten ${e.v} hat nun Indegree 0!` : ''}`,
+        q: "Was geschieht, wenn ein Indegree auf 0 fällt?",
+        a: "Der Knoten wird in die Verarbeitungswarteschlange (Queue) aufgenommen."
+      });
+    }
+  }
+
+  steps.push({
+    type: 'toposort',
+    nodes,
+    edges,
+    indegree: { ...indegree },
+    topoOrder: [...topoOrder],
+    codeLine: 4,
+    log: `🎉 Topologische Sortierung beendet! Final Ordnung: [${topoOrder.join(' ➔ ')}].`,
+    q: "Welche Zeitkomplexität hat TopoSort (Kahn-Algorithmus)?",
+    a: "O(V + E) in Zeit und O(V) in Raum."
+  });
 }
 
 function simulateFloydDetailed(graphData, steps) {

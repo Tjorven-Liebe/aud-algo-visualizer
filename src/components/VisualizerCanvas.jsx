@@ -18,9 +18,11 @@ export default function VisualizerCanvas({ currentStep, algoKey, rawData }) {
 
       if (currentStep.type === 'tree') {
         drawTreePremiumStyle(ctx, canvas, currentStep, algoKey, animatedNodesRef.current);
-      } else if (currentStep.type === 'graph' || currentStep.type === 'floyd' || algoKey === 'floyd') {
+      } else if (currentStep.type === 'graph' || currentStep.type === 'floyd' || currentStep.type === 'toposort' || algoKey === 'floyd' || algoKey === 'toposort') {
         if (algoKey === 'floyd' || currentStep.type === 'floyd') {
           drawFloydWarshallPremiumStyle(ctx, canvas, currentStep, rawData);
+        } else if (algoKey === 'toposort' || currentStep.type === 'toposort') {
+          drawTopoSortPremiumStyle(ctx, canvas, currentStep, rawData);
         } else {
           drawGraph(ctx, canvas, currentStep, rawData, algoKey);
         }
@@ -881,7 +883,7 @@ function drawFloydWarshallPremiumStyle(ctx, canvas, step, rawData) {
 
     for (let c = 0; c < V; c++) {
       const x = pathMatX + (c + 1) * cellW;
-      const y = pathMatX + (r + 1) * cellH;
+      const y = matY + (r + 1) * cellH;
 
       const isCurrentCell = (r === iIdx && c === jIdx);
 
@@ -1076,6 +1078,193 @@ function drawFloydWarshallPremiumStyle(ctx, canvas, step, rawData) {
       ctx.fillStyle = '#f59e0b'; ctx.font = '700 10px Inter';
       ctx.fillText('⚡ k', pos.x, pos.y - 32);
     }
+    ctx.restore();
+  });
+
+  ctx.restore();
+}
+
+
+// -----------------------------------------------------------------------
+// 100% USFCA GALLES TOPOLOGICAL SORT INDEGREE & GRAPH RENDERER
+// -----------------------------------------------------------------------
+function drawTopoSortPremiumStyle(ctx, canvas, step, rawData) {
+  ctx.save();
+  const width = canvas.width;
+  const height = canvas.height;
+
+  const nodes = step.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
+  const edges = step.edges || [];
+  const indegree = step.indegree || {};
+  const topoOrder = step.topoOrder || [];
+  const V = nodes.length;
+
+  const activeNode = step.activeNode;
+  const activeEdge = step.activeEdge;
+
+  // Header Title
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '700 16px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Topological Sort (Indegree Method - USFCA Galles Original)', width / 2, 28);
+
+  // 1. TOP CENTER: TOPOLOGICAL ORDER OUTPUT ARRAY
+  const boxW = 42;
+  const boxH = 34;
+  const arrayStartX = (width - V * boxW) / 2;
+  const arrayY = 48;
+
+  ctx.fillStyle = '#4ade80';
+  ctx.font = '600 12px Inter, sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('Topo-Order: ', arrayStartX - 10, arrayY + boxH / 2 + 4);
+
+  nodes.forEach((_, idx) => {
+    const x = arrayStartX + idx * boxW;
+    const val = topoOrder[idx];
+    const isFilled = val !== undefined;
+
+    ctx.fillStyle = isFilled ? '#052e16' : '#0f172a';
+    ctx.strokeStyle = isFilled ? '#4ade80' : '#334155';
+    ctx.lineWidth = isFilled ? 2 : 1;
+
+    ctx.beginPath(); ctx.roundRect(x + 2, arrayY, boxW - 4, boxH, 6); ctx.fill(); ctx.stroke();
+
+    if (isFilled) {
+      ctx.fillStyle = '#4ade80';
+      ctx.font = '700 15px Fira Code, monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(val, x + boxW / 2, arrayY + boxH / 2 + 1);
+    }
+  });
+
+  // 2. LEFT SIDE: INDEGREE TABLE (USFCA Galles Style)
+  const tblX = 35;
+  const tblY = 110;
+  const colW = 60;
+  const rowH = 28;
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.font = '700 13px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Indegree Table', tblX, tblY - 10);
+
+  // Header Row
+  ctx.fillStyle = '#1e293b'; ctx.strokeStyle = '#334155'; ctx.lineWidth = 1;
+  ctx.fillRect(tblX, tblY, colW * 2, rowH); ctx.strokeRect(tblX, tblY, colW * 2, rowH);
+  ctx.fillStyle = '#94a3b8'; ctx.font = '600 11px Fira Code'; ctx.textAlign = 'center';
+  ctx.fillText('Knoten', tblX + colW / 2, tblY + 18);
+  ctx.fillText('Indegree', tblX + colW + colW / 2, tblY + 18);
+
+  nodes.forEach((n, idx) => {
+    const y = tblY + (idx + 1) * rowH;
+    const inDegVal = indegree[n] !== undefined ? indegree[n] : 0;
+    const isZero = inDegVal === 0;
+    const isActive = activeNode === n;
+
+    let bg = '#0f172a';
+    let border = '#334155';
+    let textColor = '#cbd5e1';
+
+    if (isActive) {
+      bg = '#450a0a'; border = '#ef4444'; textColor = '#fca5a5';
+    } else if (isZero) {
+      bg = '#064e3b'; border = '#34d399'; textColor = '#6ee7b7';
+    }
+
+    ctx.fillStyle = bg; ctx.strokeStyle = border; ctx.lineWidth = (isActive || isZero) ? 2 : 1;
+    ctx.fillRect(tblX, y, colW * 2, rowH); ctx.strokeRect(tblX, y, colW * 2, rowH);
+
+    ctx.fillStyle = textColor; ctx.font = '700 12px Fira Code, monospace'; ctx.textAlign = 'center';
+    ctx.fillText(n, tblX + colW / 2, y + 18);
+    ctx.fillText(inDegVal, tblX + colW + colW / 2, y + 18);
+  });
+
+  // 3. RIGHT SIDE: DIRECTED GRAPH (DAG) WITH ARROWS
+  const graphCenterX = width - 260;
+  const graphCenterY = height / 2 + 30;
+  const graphRadius = 150;
+
+  const positions = {};
+  nodes.forEach((key, idx) => {
+    const angle = (2 * Math.PI * idx / V) - Math.PI / 2;
+    positions[key] = {
+      x: graphCenterX + graphRadius * Math.cos(angle),
+      y: graphCenterY + graphRadius * Math.sin(angle)
+    };
+  });
+
+  // Draw Directed Edges
+  edges.forEach(e => {
+    const uPos = positions[e.u];
+    const vPos = positions[e.v];
+    if (!uPos || !vPos) return;
+
+    const isCurrentEdge = activeEdge && activeEdge.u === e.u && activeEdge.v === e.v;
+
+    let strokeCol = '#334155';
+    let lineW = 2;
+
+    if (isCurrentEdge) {
+      strokeCol = '#ef4444'; // Thick Red Edge matching USFCA Galles!
+      lineW = 4.5;
+    }
+
+    ctx.save();
+    ctx.strokeStyle = strokeCol;
+    ctx.lineWidth = lineW;
+    ctx.beginPath();
+    ctx.moveTo(uPos.x, uPos.y);
+    ctx.lineTo(vPos.x, vPos.y);
+    ctx.stroke();
+
+    // Arrowhead at target vPos
+    const dx = vPos.x - uPos.x;
+    const dy = vPos.y - uPos.y;
+    const angle = Math.atan2(dy, dx);
+    const nodeR = 24;
+    const arrowX = vPos.x - nodeR * Math.cos(angle);
+    const arrowY = vPos.y - nodeR * Math.sin(angle);
+
+    ctx.fillStyle = strokeCol;
+    ctx.beginPath();
+    ctx.moveTo(arrowX, arrowY);
+    ctx.lineTo(arrowX - 10 * Math.cos(angle - Math.PI / 6), arrowY - 10 * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(arrowX - 10 * Math.cos(angle + Math.PI / 6), arrowY - 10 * Math.sin(angle + Math.PI / 6));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
+
+  // Draw Graph Nodes
+  nodes.forEach(key => {
+    const pos = positions[key];
+    if (!pos) return;
+
+    const isActive = activeNode === key;
+    const inDegVal = indegree[key] !== undefined ? indegree[key] : 0;
+    const isZero = inDegVal === 0;
+
+    let fillCol = '#1e293b';
+    let strokeCol = '#38bdf8';
+
+    if (isActive) {
+      fillCol = '#78350f'; strokeCol = '#f59e0b';
+    } else if (isZero) {
+      fillCol = '#052e16'; strokeCol = '#4ade80';
+    }
+
+    ctx.save();
+    ctx.fillStyle = fillCol; ctx.strokeStyle = strokeCol; ctx.lineWidth = (isActive || isZero) ? 3.5 : 2;
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc'; ctx.font = '700 15px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(key, pos.x, pos.y);
+
+    // Indegree Badge above node
+    ctx.fillStyle = isZero ? '#4ade80' : '#94a3b8';
+    ctx.font = '600 11px Fira Code';
+    ctx.fillText(`in:${inDegVal}`, pos.x, pos.y + 35);
     ctx.restore();
   });
 
