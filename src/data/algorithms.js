@@ -1702,6 +1702,21 @@ function simulateDFSDetailed(graphData, steps, startNode = 'A') {
 function simulateHybridSortDetailed(arr, left, right, depth, k, steps) {
   if (left >= right) return;
 
+  const pointers = { p: left, r: right, i: left, j: right, pivotIdx: left, pivotVal: arr[left] };
+
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [left, right],
+    pivot: left,
+    pointers: { ...pointers },
+    codeLine: 4,
+    log: `QuickSort Aufruf: partition(arr, p=${left}, r=${right}), Tiefe depth = ${depth} (Limit k = ${k})`,
+    q: "Was passiert, wenn depth >= k erreicht wird?",
+    a: `Sobald depth >= k (${depth} >= ${k}), bricht QuickSort ab und schaltet für diesen Teilbereich auf MergeSort um!`
+  });
+  if (left >= right) return;
+
   steps.push({
     type: 'array',
     arr: [...arr],
