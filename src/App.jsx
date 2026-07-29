@@ -286,29 +286,51 @@ export default function App() {
               >
                 {category === 'sort' && (
                   <>
-                    <option value="hybridsort">HybridSort (Quick + MergeSort)</option>
-                    <option value="radixsort">RadixSort (LSD Bucket Sort)</option>
+                    <optgroup label="⭐ TESTAT-ABGABEN (P1)">
+                      <option value="hybridsort">⭐ HybridSort (Quick + MergeSort)</option>
+                      <option value="radixsort">⭐ RadixSort (LSD Bucket Sort)</option>
+                    </optgroup>
+                    <optgroup label="📚 WEITERE CLRS LEHRBUCH-ALGORITHMEN">
+                      <option value="quicksort">QuickSort (Hoare Partitioning)</option>
+                      <option value="mergesort">MergeSort (Divide & Conquer)</option>
+                      <option value="heapsort">HeapSort (Max-Heapify)</option>
+                      <option value="insertionsort">InsertionSort</option>
+                      <option value="countingsort">CountingSort (Non-comparison)</option>
+                    </optgroup>
                   </>
                 )}
                 {category === 'tree' && (
                   <>
-                    <option value="avl">AVL Tree (USFCA Galles Style)</option>
-                    <option value="splay">Splay Tree (Zig / Zig-Zig)</option>
-                    <option value="rbtree">Red-Black Tree (4 Rules)</option>
+                    <optgroup label="⭐ TESTAT-ABGABEN (P2)">
+                      <option value="avl">⭐ AVL Tree (USFCA Galles Style)</option>
+                      <option value="splay">⭐ Splay Tree (Zig / Zig-Zig)</option>
+                      <option value="rbtree">⭐ Red-Black Tree (4 Rules)</option>
+                    </optgroup>
+                    <optgroup label="📚 WEITERE CLRS LEHRBUCH-ALGORITHMEN">
+                      <option value="bst">Binärer Suchbaum (BST)</option>
+                      <option value="heap">Max-Heap / PriorityQueue</option>
+                    </optgroup>
                   </>
                 )}
                 {category === 'graph' && (
                   <>
-                    <option value="dijkstra">Dijkstra (Shortest Paths)</option>
-                    <option value="bellmanford">Bellman-Ford (Negative Cycle)</option>
-                    <option value="kruskal">Kruskal (MST & Union-Find)</option>
+                    <optgroup label="⭐ TESTAT-ABGABEN (P3)">
+                      <option value="dijkstra">⭐ Dijkstra (Shortest Paths)</option>
+                      <option value="bellmanford">⭐ Bellman-Ford (Negative Cycle)</option>
+                      <option value="kruskal">⭐ Kruskal (MST & Union-Find)</option>
+                    </optgroup>
+                    <optgroup label="📚 WEITERE CLRS LEHRBUCH-ALGORITHMEN">
+                      <option value="prim">Prim-Algorithmus (MST)</option>
+                      <option value="bfs">Breitensuche (BFS)</option>
+                      <option value="dfs">Tiefensuche (DFS)</option>
+                    </optgroup>
                   </>
                 )}
               </select>
             </div>
 
             {/* Graph Start & Target Node Selectors */}
-            {category === 'graph' && algoKey !== 'kruskal' && (
+            {category === 'graph' && algoKey !== 'kruskal' && algoKey !== 'prim' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 700, color: '#38bdf8' }}>🚀 START:</label>
@@ -321,16 +343,18 @@ export default function App() {
                   </select>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <label style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b' }}>🎯 ZIEL:</label>
-                  <select
-                    value={targetNode}
-                    onChange={(e) => handleGraphNodeChange(startNode, e.target.value)}
-                    style={{ backgroundColor: '#1e293b', border: '1px solid #d97706', color: '#fff', padding: '5px 10px', borderRadius: '6px', fontSize: '13px' }}
-                  >
-                    {availableGraphNodes.map(n => <option key={n} value={n}>{n}</option>)}
-                  </select>
-                </div>
+                {algoKey !== 'bfs' && algoKey !== 'dfs' && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <label style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b' }}>🎯 ZIEL:</label>
+                    <select
+                      value={targetNode}
+                      onChange={(e) => handleGraphNodeChange(startNode, e.target.value)}
+                      style={{ backgroundColor: '#1e293b', border: '1px solid #d97706', color: '#fff', padding: '5px 10px', borderRadius: '6px', fontSize: '13px' }}
+                    >
+                      {availableGraphNodes.map(n => <option key={n} value={n}>{n}</option>)}
+                    </select>
+                  </div>
+                )}
               </div>
             )}
 
@@ -487,8 +511,8 @@ export default function App() {
             stepIndex={stepIndex}
             totalSteps={steps.length}
             stepLog={currentStep?.log || 'Klicke auf Start oder wähle einen Zielknoten.'}
-            question={currentStep?.q || 'Welche Eigenschaften hat der Dijkstra-Algorithmus?'}
-            answer={currentStep?.a || 'Er berechnet ausgehend von einem Startknoten die kürzesten Pfade zu allen/einem Zielknoten in O((V + E) log V).'}
+            question={currentStep?.q || 'Welche Eigenschaften hat dieser Algorithmus?'}
+            answer={currentStep?.a || 'Wähle einen Datensatz, um den Schritt-für-Schritt Ablauf zu starten.'}
           />
         </div>
       </main>

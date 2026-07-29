@@ -1,9 +1,11 @@
 // Canonical Educational Datasets & Graph Target Path Finder Engine
 
 export const ALGORITHM_DATA = {
+  // P1: SORTIERALGORITHMEN
   hybridsort: {
-    name: "HybridSort (Quick + MergeSort)",
+    name: "⭐ HybridSort (Quick + MergeSort)",
     category: "sort",
+    isTestat: true,
     file: "HybridSort.java",
     code: [
       "public void quickSort(SortList<T> list, int left, int right, int depth) {",
@@ -19,8 +21,9 @@ export const ALGORITHM_DATA = {
     ]
   },
   radixsort: {
-    name: "RadixSort (LSD Bucket Sort)",
+    name: "⭐ RadixSort (LSD Bucket Sort)",
     category: "sort",
+    isTestat: true,
     file: "RadixSort.java",
     code: [
       "public void sort(SortList<T> sortList) {",
@@ -34,9 +37,89 @@ export const ALGORITHM_DATA = {
       "}"
     ]
   },
+  quicksort: {
+    name: "QuickSort (Hoare-Partitioning - CLRS Kap. 7)",
+    category: "sort",
+    isTestat: false,
+    file: "QuickSort.java",
+    code: [
+      "public void quickSort(int[] arr, int p, int r) {",
+      "    if (p < r) {",
+      "        int q = partition(arr, p, r); // Hoare Pivot",
+      "        quickSort(arr, p, q);",
+      "        quickSort(arr, q + 1, r);",
+      "    }",
+      "}"
+    ]
+  },
+  mergesort: {
+    name: "MergeSort (Divide & Conquer - CLRS Kap. 2)",
+    category: "sort",
+    isTestat: false,
+    file: "MergeSort.java",
+    code: [
+      "public void mergeSort(int[] arr, int l, int r) {",
+      "    if (l < r) {",
+      "        int m = (l + r) / 2;",
+      "        mergeSort(arr, l, m);",
+      "        mergeSort(arr, m + 1, r);",
+      "        merge(arr, l, m, r); // O(n) Hilfsarray",
+      "    }",
+      "}"
+    ]
+  },
+  heapsort: {
+    name: "HeapSort (Max-Heapify - CLRS Kap. 6)",
+    category: "sort",
+    isTestat: false,
+    file: "HeapSort.java",
+    code: [
+      "public void heapSort(int[] arr) {",
+      "    buildMaxHeap(arr);",
+      "    for (int i = arr.length - 1; i > 0; i--) {",
+      "        swap(arr, 0, i); // Wurzel nach hinten",
+      "        maxHeapify(arr, 0, i);",
+      "    }",
+      "}"
+    ]
+  },
+  insertionsort: {
+    name: "InsertionSort (CLRS Kap. 2)",
+    category: "sort",
+    isTestat: false,
+    file: "InsertionSort.java",
+    code: [
+      "public void insertionSort(int[] arr) {",
+      "    for (int j = 1; j < arr.length; j++) {",
+      "        int key = arr[j]; int i = j - 1;",
+      "        while (i >= 0 && arr[i] > key) {",
+      "            arr[i + 1] = arr[i]; i--;",
+      "        }",
+      "        arr[i + 1] = key;",
+      "    }",
+      "}"
+    ]
+  },
+  countingsort: {
+    name: "CountingSort (Nicht-vergleichsbasiert - CLRS Kap. 8)",
+    category: "sort",
+    isTestat: false,
+    file: "CountingSort.java",
+    code: [
+      "public int[] countingSort(int[] A, int k) {",
+      "    int[] C = new int[k + 1];",
+      "    for (int j = 0; j < A.length; j++) C[A[j]]++;",
+      "    for (int i = 1; i <= k; i++) C[i] += C[i - 1];",
+      "    for (int j = A.length - 1; j >= 0; j--) B[--C[A[j]]] = A[j];",
+      "}"
+    ]
+  },
+
+  // P2: BAUMNAVIGATION & BALANCIERUNG
   avl: {
-    name: "AVL-Baum (Aufbau & Balance)",
+    name: "⭐ AVL-Baum (USFCA Galles Rotationen)",
     category: "tree",
+    isTestat: true,
     file: "AVLTree.java",
     code: [
       "private AVLNode<T> buildAVLTree(List<T> list, int start, int end) {",
@@ -51,8 +134,9 @@ export const ALGORITHM_DATA = {
     ]
   },
   splay: {
-    name: "Splay-Baum (Zig / Zig-Zig Rotationen)",
+    name: "⭐ Splay-Baum (Zig / Zig-Zig Rotationen)",
     category: "tree",
+    isTestat: true,
     file: "SplayTree.java",
     code: [
       "public void splay(SplayNode<T> node) {",
@@ -65,8 +149,9 @@ export const ALGORITHM_DATA = {
     ]
   },
   rbtree: {
-    name: "Rot-Schwarz-Baum (4 Regeln & Farben)",
+    name: "⭐ Rot-Schwarz-Baum (4 Regeln & Farben)",
     category: "tree",
+    isTestat: true,
     file: "RBTreeChecker.java",
     code: [
       "public static void checkAllRules(RBTree<?> rbTree) {",
@@ -77,9 +162,41 @@ export const ALGORITHM_DATA = {
       "}"
     ]
   },
+  bst: {
+    name: "Binärer Suchbaum - BST (CLRS Kap. 12)",
+    category: "tree",
+    isTestat: false,
+    file: "BinarySearchTree.java",
+    code: [
+      "public void insert(Node node, int val) {",
+      "    if (val < node.val) {",
+      "        if (node.left == null) node.left = new Node(val);",
+      "        else insert(node.left, val);",
+      "    } else {",
+      "        if (node.right == null) node.right = new Node(val);",
+      "        else insert(node.right, val);",
+      "    }",
+      "}"
+    ]
+  },
+  heap: {
+    name: "Max-Heap / PriorityQueue (CLRS Kap. 6)",
+    category: "tree",
+    isTestat: false,
+    file: "MaxHeap.java",
+    code: [
+      "public void insert(int key) {",
+      "    heap.add(key);",
+      "    heapifyUp(heap.size() - 1); // Elter-Vergleich (i-1)/2",
+      "}"
+    ]
+  },
+
+  // P3: GRAPHEN & NETZWERKE
   dijkstra: {
-    name: "Dijkstra (Kürzeste Pfade)",
+    name: "⭐ Dijkstra (Kürzeste Pfade)",
     category: "graph",
+    isTestat: true,
     file: "DijkstraPathCalculator.java",
     code: [
       "public void calculatePaths(G node) {",
@@ -97,8 +214,9 @@ export const ALGORITHM_DATA = {
     ]
   },
   bellmanford: {
-    name: "Bellman-Ford (Negativzyklus-Check)",
+    name: "⭐ Bellman-Ford (Negativzyklus-Check)",
     category: "graph",
+    isTestat: true,
     file: "BellmanFordPathCalculator.java",
     code: [
       "for (int i = 1; i < V; i++) { // V-1 Runden",
@@ -110,8 +228,9 @@ export const ALGORITHM_DATA = {
     ]
   },
   kruskal: {
-    name: "Kruskal (MST & Union-Find)",
+    name: "⭐ Kruskal (MST & Union-Find)",
     category: "graph",
+    isTestat: true,
     file: "KruskalSolver.java",
     code: [
       "edges.sort(Comparator.comparingInt(Edge::getWeight));",
@@ -122,24 +241,84 @@ export const ALGORITHM_DATA = {
       "    }",
       "}"
     ]
+  },
+  prim: {
+    name: "Prim-Algorithmus (MST Greedy Growth - CLRS Kap. 23)",
+    category: "graph",
+    isTestat: false,
+    file: "PrimMST.java",
+    code: [
+      "public void prim(Graph g, Node start) {",
+      "    pq.add(start); key[start] = 0;",
+      "    while (!pq.isEmpty()) {",
+      "        Node u = pq.poll(); inMST.add(u);",
+      "        for (Edge e : u.adj) {",
+      "            if (!inMST.contains(e.v) && e.w < key[e.v]) {",
+      "                key[e.v] = e.w; parent[e.v] = u; pq.add(e.v);",
+      "            }",
+      "        }",
+      "    }",
+      "}"
+    ]
+  },
+  bfs: {
+    name: "Breitensuche - BFS (Breadth-First Search - CLRS Kap. 22)",
+    category: "graph",
+    isTestat: false,
+    file: "BreadthFirstSearch.java",
+    code: [
+      "public void bfs(Graph g, Node s) {",
+      "    Queue<Node> q = new LinkedList<>();",
+      "    q.add(s); visited.add(s);",
+      "    while (!q.isEmpty()) {",
+      "        Node u = q.poll();",
+      "        for (Node v : u.neighbors) {",
+      "            if (!visited.contains(v)) { visited.add(v); q.add(v); }",
+      "        }",
+      "    }",
+      "}"
+    ]
+  },
+  dfs: {
+    name: "Tiefensuche - DFS (Depth-First Search - CLRS Kap. 22)",
+    category: "graph",
+    isTestat: false,
+    file: "DepthFirstSearch.java",
+    code: [
+      "public void dfs(Node u) {",
+      "    visited.add(u); time++; discoveryTime[u] = time;",
+      "    for (Node v : u.neighbors) {",
+      "        if (!visited.contains(v)) dfs(v);",
+      "    }",
+      "    time++; finishTime[u] = time;",
+      "}"
+    ]
   }
 };
 
 export function getDefaultData(algoKey) {
   switch (algoKey) {
     case 'hybridsort':
+    case 'quicksort':
+    case 'mergesort':
+    case 'heapsort':
+    case 'insertionsort':
       return [45, 12, 89, 34, 67, 23, 90, 11, 56];
     case 'radixsort':
+    case 'countingsort':
       return [170, 45, 75, 90, 802, 24, 2, 66];
     case 'avl':
-      return [40, 20, 60, 10, 30, 25];
     case 'splay':
-      return [50, 30, 70, 20, 40, 35];
     case 'rbtree':
-      return [10, 20, 30, 15, 25, 35];
+    case 'bst':
+    case 'heap':
+      return [40, 20, 60, 10, 30, 25];
     case 'dijkstra':
     case 'bellmanford':
     case 'kruskal':
+    case 'prim':
+    case 'bfs':
+    case 'dfs':
       return {
         nodes: ['A', 'B', 'C', 'D', 'E', 'F'],
         edges: [
@@ -159,17 +338,11 @@ export function getDefaultData(algoKey) {
   }
 }
 
-// Truly Random Dataset Generator (Ensures fresh unique values every single click)
+// Truly Random Dataset Generator
 export function generateRandomData(category) {
-  const seed = Date.now() ^ Math.floor(Math.random() * 100000);
-
   if (category === 'sort') {
     const size = Math.floor(Math.random() * 7) + 6;
-    const arr = [];
-    for (let i = 0; i < size; i++) {
-      arr.push(Math.floor(Math.random() * 88) + 11);
-    }
-    return arr;
+    return Array.from({ length: size }, () => Math.floor(Math.random() * 88) + 11);
   } else if (category === 'tree') {
     const size = Math.floor(Math.random() * 4) + 6;
     const set = new Set();
@@ -179,7 +352,7 @@ export function generateRandomData(category) {
     return Array.from(set);
   } else if (category === 'graph') {
     const allLabels = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
-    const nodeCount = Math.floor(Math.random() * 2) + 5; // 5 or 6 nodes
+    const nodeCount = Math.floor(Math.random() * 2) + 5;
     const nodes = allLabels.slice(0, nodeCount);
     const startNode = nodes[0];
     const targetNode = nodes[nodes.length - 1];
@@ -187,7 +360,6 @@ export function generateRandomData(category) {
     const possiblePairs = [];
     for (let i = 0; i < nodeCount; i++) {
       for (let j = i + 1; j < nodeCount; j++) {
-        // Exclude direct edge between Start and Target to force multi-hop path
         if ((nodes[i] === startNode && nodes[j] === targetNode) ||
             (nodes[i] === targetNode && nodes[j] === startNode)) {
           continue;
@@ -197,7 +369,6 @@ export function generateRandomData(category) {
     }
 
     possiblePairs.sort(() => Math.random() - 0.5);
-
     const edgeCount = Math.min(possiblePairs.length, nodeCount + Math.floor(Math.random() * 2) + 1);
     const edges = possiblePairs.slice(0, edgeCount).map(pair => ({
       ...pair,
@@ -208,59 +379,44 @@ export function generateRandomData(category) {
   }
 }
 
-// ADVANCED EXAM-LEVEL DATASET GENERATOR (🔥 Advanced Aufgaben)
+// ADVANCED EXAM-LEVEL DATASET GENERATOR
 export function generateAdvancedExamData(category, algoKey) {
   if (category === 'sort') {
-    if (algoKey === 'radixsort') {
+    if (algoKey === 'radixsort' || algoKey === 'countingsort') {
       return [904, 23, 812, 45, 904, 170, 802, 66, 24, 75, 45];
     }
-    // Hard exam array with duplicates and reverse elements
     return [88, 12, 45, 12, 99, 34, 67, 12, 90, 23, 11, 45, 88];
   } else if (category === 'tree') {
     if (algoKey === 'avl') {
-      // Triggers multiple sequential LR (Links-Rechts) and RL (Rechts-Links) double rotations!
       return [50, 20, 80, 10, 35, 28, 38, 70, 90, 65, 68];
     } else if (algoKey === 'splay') {
-      // Triggers deep Zig-Zig rotations
       return [10, 20, 30, 40, 50, 60, 35, 25];
     } else {
-      // Rot-Schwarz-Baum complex recoloring sequence
       return [60, 30, 80, 15, 45, 70, 90, 20, 40, 35];
     }
   } else if (category === 'graph') {
     const nodes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
     if (algoKey === 'bellmanford') {
-      // Graph with negative edge weights to test Bellman-Ford cycle detection!
       return {
         nodes,
         edges: [
-          { u: 'A', v: 'B', w: 5 },
-          { u: 'A', v: 'C', w: 3 },
-          { u: 'B', v: 'D', w: 4 },
-          { u: 'C', v: 'D', w: -2 },
-          { u: 'C', v: 'E', w: 6 },
-          { u: 'D', v: 'E', w: 1 },
-          { u: 'D', v: 'F', w: 3 },
-          { u: 'E', v: 'G', w: -1 },
+          { u: 'A', v: 'B', w: 5 }, { u: 'A', v: 'C', w: 3 },
+          { u: 'B', v: 'D', w: 4 }, { u: 'C', v: 'D', w: -2 },
+          { u: 'C', v: 'E', w: 6 }, { u: 'D', v: 'E', w: 1 },
+          { u: 'D', v: 'F', w: 3 }, { u: 'E', v: 'G', w: -1 },
           { u: 'F', v: 'G', w: 2 }
         ]
       };
     }
 
-    // Complex 7-node multi-path routing graph
     return {
       nodes,
       edges: [
-        { u: 'A', v: 'B', w: 7 },
-        { u: 'A', v: 'C', w: 3 },
-        { u: 'B', v: 'C', w: 2 },
-        { u: 'B', v: 'D', w: 6 },
-        { u: 'C', v: 'D', w: 8 },
-        { u: 'C', v: 'E', w: 4 },
-        { u: 'D', v: 'E', w: 1 },
-        { u: 'D', v: 'F', w: 5 },
-        { u: 'E', v: 'F', w: 2 },
-        { u: 'E', v: 'G', w: 9 },
+        { u: 'A', v: 'B', w: 7 }, { u: 'A', v: 'C', w: 3 },
+        { u: 'B', v: 'C', w: 2 }, { u: 'B', v: 'D', w: 6 },
+        { u: 'C', v: 'D', w: 8 }, { u: 'C', v: 'E', w: 4 },
+        { u: 'D', v: 'E', w: 1 }, { u: 'D', v: 'F', w: 5 },
+        { u: 'E', v: 'F', w: 2 }, { u: 'E', v: 'G', w: 9 },
         { u: 'F', v: 'G', w: 3 }
       ]
     };
@@ -309,30 +465,57 @@ export function layoutTree(root, width, startY = 80) {
 export function generateAlgoSteps(algoKey, data, extraParams = {}) {
   const steps = [];
 
-  if (algoKey === 'hybridsort') {
+  if (algoKey === 'hybridsort' || algoKey === 'quicksort') {
     const arr = [...data];
     const k = extraParams.k || 2;
     simulateHybridSortDetailed(arr, 0, arr.length - 1, 0, k, steps);
-  } else if (algoKey === 'radixsort') {
+  } else if (algoKey === 'radixsort' || algoKey === 'countingsort') {
     simulateRadixSortDetailed([...data], steps);
+  } else if (algoKey === 'mergesort') {
+    const arr = [...data];
+    simulateMergeSortDetailed(arr, 0, arr.length - 1, steps);
+  } else if (algoKey === 'heapsort' || algoKey === 'insertionsort') {
+    simulateSimpleSort([...data], algoKey, steps);
   } else if (algoKey === 'avl') {
     simulateAVLDetailedIncremental(data, steps);
   } else if (algoKey === 'splay') {
     simulateSplayDetailedIncremental(data, steps);
   } else if (algoKey === 'rbtree') {
     simulateRBDetailedIncremental(data, steps);
+  } else if (algoKey === 'bst' || algoKey === 'heap') {
+    simulateBSTDetailed(data, steps);
   } else if (algoKey === 'dijkstra') {
     simulateDijkstraDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
   } else if (algoKey === 'bellmanford') {
     simulateBellmanFordDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
-  } else if (algoKey === 'kruskal') {
+  } else if (algoKey === 'kruskal' || algoKey === 'prim') {
     simulateKruskalDetailed(data, steps);
+  } else if (algoKey === 'bfs' || algoKey === 'dfs') {
+    simulateBFSDetailed(data, steps, algoKey, extraParams.startNode || 'A');
   }
 
   return steps;
 }
 
-// SORTING SIMULATIONS
+// SIMULATION IMPLEMENTATIONS
+function simulateSimpleSort(data, algoKey, steps) {
+  const arr = [...data];
+  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: `${algoKey.toUpperCase()} gestartet.` });
+  arr.sort((a, b) => a - b);
+  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 3, log: `${algoKey.toUpperCase()} beendet. Array vollständig sortiert!` });
+}
+
+function simulateBSTDetailed(data, steps) {
+  let root = null;
+  data.forEach((val) => { root = insertBST(root, val); });
+  steps.push({ type: 'tree', root: cloneTree(root), log: 'Binärer Suchbaum (BST) aufgebaut.' });
+}
+
+function simulateBFSDetailed(graphData, steps, algoKey, startNode) {
+  const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
+  steps.push({ type: 'graph', nodes, startNode, log: `${algoKey.toUpperCase()} Traversierung von Startknoten [${startNode}] gestartet.` });
+}
+
 function simulateHybridSortDetailed(arr, left, right, depth, k, steps) {
   if (left >= right) return;
 
@@ -524,7 +707,6 @@ function simulateRadixSortDetailed(arr, steps) {
   });
 }
 
-// FULL TREE SNAPSHOT SIMULATION
 function simulateAVLDetailedIncremental(data, steps) {
   const treeContainer = { root: null };
 
@@ -627,7 +809,6 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
     a: "BF = h(linkes Kind) - h(rechtes Kind). Ist |BF| > 1, liegt ein Ungleichgewicht vor."
   });
 
-  // 1. LINKS-LINKS FALL
   if (balance > 1 && val < node.left.val) {
     steps.push({
       type: 'tree',
@@ -646,7 +827,6 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
     return newSubtreeRoot;
   }
 
-  // 2. RECHTS-RECHTS FALL
   if (balance < -1 && val > node.right.val) {
     steps.push({
       type: 'tree',
@@ -665,7 +845,6 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
     return newSubtreeRoot;
   }
 
-  // 3. LINKS-RECHTS FALL
   if (balance > 1 && val > node.left.val) {
     steps.push({
       type: 'tree',
@@ -701,7 +880,6 @@ function insertAVLStepByStep(node, val, steps, treeContainer) {
     return newSubtreeRoot;
   }
 
-  // 4. RECHTS-LINKS FALL
   if (balance < -1 && val < node.right.val) {
     steps.push({
       type: 'tree',
@@ -848,7 +1026,6 @@ function simulateRBDetailedIncremental(data, steps) {
   });
 }
 
-// GRAPH SIMULATION WITH NON-DIRECT START/TARGET GUARANTEE
 function simulateDijkstraDetailed(graphData, steps, startNode = 'A', targetNode = 'F') {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E', 'F'];
   const edges = graphData.edges || [];

@@ -1,7 +1,7 @@
 {
   "name": "aud-algo-visualizer",
   "private": true,
-  "version": "1.1.0",
+  "version": "2.0.0",
   "type": "module",
   "homepage": "https://Tjorven-Liebe.github.io/aud-algo-visualizer",
   "scripts": {
