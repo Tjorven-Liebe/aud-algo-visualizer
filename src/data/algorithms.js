@@ -180,7 +180,6 @@ export function generateRandomData(category) {
     const possiblePairs = [];
     for (let i = 0; i < nodeCount; i++) {
       for (let j = i + 1; j < nodeCount; j++) {
-        // GUARANTEE: Never create a direct 1-step edge between Start and Target!
         if ((nodes[i] === startNode && nodes[j] === targetNode) ||
             (nodes[i] === targetNode && nodes[j] === startNode)) {
           continue;
@@ -1037,9 +1036,9 @@ function simulateKruskalDetailed(graphData, steps) {
     mstEdges: [],
     rejectedEdges: [],
     codeLine: 0,
-    log: `Kruskal gestartet: Sortiere alle ${edges.length} Kanten aufsteigend nach Gewicht. Union-Find initialisiert für ${nodes.length} Knoten.`,
-    q: "Was ist die Schnitteigenschaft (Cut Property)?",
-    a: "Für jeden Schnitt in einem Graphen ist die leichteste Kante, die den Schnitt kreuzt, Teil eines minimalen Spannbaums."
+    log: `Kruskal gestartet: Berechne den Minimalen Spannbaum (MST) für alle ${nodes.length} Knoten (kein Start- oder Zielknoten).`,
+    q: "Was unterscheidet Kruskal (MST) von Dijkstra (Kürzester Pfad)?",
+    a: "Dijkstra sucht den kürzesten Pfad zwischen 2 bestimmten Knoten (Start ➔ Ziel). Kruskal verbindet ALLE Knoten im Graphen kreisfrei mit minimalen Gesamtkosten (kein Start-/Zielknoten!)."
   });
 
   edges.forEach((e, idx) => {
@@ -1084,7 +1083,7 @@ function simulateKruskalDetailed(graphData, steps) {
     mstEdges: [...mstEdges],
     rejectedEdges: [...rejectedEdges],
     codeLine: 4,
-    log: `✨ Kruskal beendet! Minimaler Spannbaum (MST) mit ${mstEdges.length} leuchtend grünen Kanten erfolgreich berechnet.`,
+    log: `✨ Kruskal beendet! Minimaler Spannbaum (MST) mit ${mstEdges.length} leuchtend grünen Kanten verbindet ALLE Knoten im Graphen kreisfrei.`,
     q: "Welche Laufzeit hat Kruskal?",
     a: "O(E log E) bzw. O(E log V) für das Sortieren der Kanten."
   });
