@@ -563,6 +563,9 @@ export function getDefaultData(algoKey) {
       return [10, 20, 60, 40, 50, 30];
     case 'minheap':
       return [12, 31, 36, 85, 35, 73];
+    case 'openhash':
+    case 'closedhash':
+      return [12, 31, 36, 85, 35, 73, 10, 11];
     case 'splay':
       return [10, 60, 20, 40];
     case 'dijkstra':

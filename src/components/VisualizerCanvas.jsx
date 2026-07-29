@@ -675,19 +675,19 @@ function drawHashTablePremiumStyle(ctx, canvas, step, algoKey) {
     const buckets = step.buckets || Array.from({ length: 10 }, () => []);
     const M = buckets.length;
     const cellW = Math.min(65, Math.floor((width - 80) / M));
-    const cellH = 40;
+    const cellH = 34;
     const startX = (width - (M * cellW)) / 2;
-    const tableY = height - 80;
+    const tableY = height - 55;
 
     // Header Title
     ctx.fillStyle = '#38bdf8';
     ctx.font = '700 16px Inter, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Open Hash Table (Closed Addressing - Chaining)', width / 2, 40);
+    ctx.fillText('Open Hash Table (Closed Addressing - Chaining)', width / 2, 35);
 
     ctx.fillStyle = '#94a3b8';
     ctx.font = '500 13px Inter, sans-serif';
-    ctx.fillText(`Hashfunktion: h(k) = k mod ${M} | Verkettete Listen an Bucket-Head`, width / 2, 65);
+    ctx.fillText(`Hashfunktion: h(k) = k mod ${M} | Verkettete Listen an Bucket-Head`, width / 2, 55);
 
     buckets.forEach((chain, i) => {
       const bx = startX + i * cellW;
@@ -716,10 +716,10 @@ function drawHashTablePremiumStyle(ctx, canvas, step, algoKey) {
       ctx.fillStyle = isProbedBucket ? '#818cf8' : '#94a3b8';
       ctx.font = '600 12px Fira Code, monospace';
       ctx.textAlign = 'center';
-      ctx.fillText(`[${i}]`, bx + cellW / 2, by + cellH + 20);
+      ctx.fillText(`[${i}]`, bx + cellW / 2, by + cellH + 16);
 
       // Draw Linked List Chain Stacking UPWARDS (Galles USFCA Original Style)
-      let currentY = by - 50;
+      let currentY = by - 44;
       let prevX = bx + cellW / 2;
       let prevY = by;
 
@@ -738,8 +738,8 @@ function drawHashTablePremiumStyle(ctx, canvas, step, algoKey) {
         ctx.fillStyle = isHighlightNode ? '#4ade80' : '#38bdf8';
         ctx.beginPath();
         ctx.moveTo(prevX, currentY + cellH);
-        ctx.lineTo(prevX - 4, currentY + cellH + 6);
-        ctx.lineTo(prevX + 4, currentY + cellH + 6);
+        ctx.lineTo(prevX - 4, currentY + cellH + 5);
+        ctx.lineTo(prevX + 4, currentY + cellH + 5);
         ctx.closePath();
         ctx.fill();
 
@@ -755,11 +755,11 @@ function drawHashTablePremiumStyle(ctx, canvas, step, algoKey) {
 
         // Node Value
         ctx.fillStyle = isHighlightNode ? '#4ade80' : '#f8fafc';
-        ctx.font = '700 14px Fira Code, monospace';
+        ctx.font = '700 13px Fira Code, monospace';
         ctx.fillText(val, bx + cellW / 2, currentY + cellH / 2 + 4);
 
         prevY = currentY;
-        currentY -= 50;
+        currentY -= 44;
       });
     });
   }
