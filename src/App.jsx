@@ -372,7 +372,7 @@ export default function App() {
                   </select>
                 </div>
 
-                {algoKey !== 'bfs' && algoKey !== 'dfs' && (
+                {algoKey !== 'bfs' && algoKey !== 'dfs' && algoKey !== 'toposort' && algoKey !== 'floyd' && (
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <label style={{ fontSize: '12px', fontWeight: 700, color: '#f59e0b' }}>🎯 ZIEL:</label>
                     <select

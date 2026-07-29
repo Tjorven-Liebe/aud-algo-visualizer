@@ -633,18 +633,22 @@ export function generateRandomData(category) {
 export function generateAdvancedExamData(category, algoKey) {
   if (category === 'sort') {
     if (algoKey === 'radixsort' || algoKey === 'countingsort') {
-      return [904, 23, 812, 45, 904, 170, 802, 66, 24, 75, 45];
+      return [904, 23, 812, 45, 904, 170, 802, 66, 24, 75, 45, 12, 999];
     }
-    return [88, 12, 45, 12, 99, 34, 67, 12, 90, 23, 11, 45, 88];
+    return [88, 12, 45, 12, 99, 34, 67, 12, 90, 23, 11, 45, 88, 5, 77, 3];
   } else if (category === 'tree') {
     if (algoKey === 'avl') {
-      return [50, 20, 80, 10, 35, 28, 38, 70, 90, 65, 68];
+      return [50, 20, 80, 10, 35, 28, 38, 70, 90, 65, 68, 85, 95];
     } else if (algoKey === 'splay') {
-      return [10, 60, 20, 40, 30, 50];
-    } else if (algoKey === 'heap') {
-      return [15, 85, 35, 95, 25, 75, 65, 45];
+      return [10, 60, 20, 40, 30, 50, 25, 35, 70];
+    } else if (algoKey === 'rbtree') {
+      return [10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    } else if (algoKey === 'btree' || algoKey === 'bplustree') {
+      return [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
+    } else if (algoKey === 'openhash' || algoKey === 'closedhash') {
+      return [14, 21, 28, 35, 42, 49, 7, 12, 19, 26, 33];
     } else {
-      return [60, 30, 80, 15, 45, 70, 90, 20, 40, 35];
+      return [60, 30, 80, 15, 45, 70, 90, 20, 40, 35, 25, 65, 75, 85, 95];
     }
   } else if (category === 'graph') {
     const nodes = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
@@ -659,19 +663,34 @@ export function generateAdvancedExamData(category, algoKey) {
           { u: 'F', v: 'G', w: 2 }
         ]
       };
+    } else if (algoKey === 'toposort') {
+      return {
+        nodes,
+        edges: [
+          { u: 'A', v: 'B', w: 1 }, { u: 'A', v: 'C', w: 1 },
+          { u: 'B', v: 'D', w: 1 }, { u: 'C', v: 'D', w: 1 },
+          { u: 'D', v: 'E', w: 1 }, { u: 'E', v: 'F', w: 1 },
+          { u: 'B', v: 'E', w: 1 }, { u: 'C', v: 'F', w: 1 },
+          { u: 'F', v: 'G', w: 1 }
+        ]
+      };
+    } else {
+      return {
+        nodes,
+        edges: [
+          { u: 'A', v: 'B', w: 7 }, { u: 'A', v: 'C', w: 3 },
+          { u: 'B', v: 'C', w: 2 }, { u: 'B', v: 'D', w: 6 },
+          { u: 'C', v: 'D', w: 8 }, { u: 'C', v: 'E', w: 4 },
+          { u: 'D', v: 'E', w: 1 }, { u: 'D', v: 'F', w: 5 },
+          { u: 'E', v: 'F', w: 2 }, { u: 'E', v: 'G', w: 9 },
+          { u: 'F', v: 'G', w: 3 }
+        ]
+      };
     }
-
-    return {
-      nodes,
-      edges: [
-        { u: 'A', v: 'B', w: 7 }, { u: 'A', v: 'C', w: 3 },
-        { u: 'B', v: 'C', w: 2 }, { u: 'B', v: 'D', w: 6 },
-        { u: 'C', v: 'D', w: 8 }, { u: 'C', v: 'E', w: 4 },
-        { u: 'D', v: 'E', w: 1 }, { u: 'D', v: 'F', w: 5 },
-        { u: 'E', v: 'F', w: 2 }, { u: 'E', v: 'G', w: 9 },
-        { u: 'F', v: 'G', w: 3 }
-      ]
-    };
+  } else if (category === 'heaps') {
+    return [15, 85, 35, 95, 25, 75, 65, 45, 55, 99, 5, 20, 60, 40, 80];
+  } else if (category === 'dp') {
+    return [9, 8, 7, 6, 5, 4, 3, 2, 1];
   }
 }
 
