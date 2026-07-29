@@ -818,20 +818,6 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
     simulateDFSDetailed(data, steps, extraParams.startNode || 'A');
   }
 
-  // GUARANTEE AT LEAST 20 INTERACTIVE ANIMATION STEPS FOR ALL ALGORITHMS
-  if (steps.length > 0 && steps.length < 20) {
-    const lastStep = steps[steps.length - 1];
-    const initialLen = steps.length;
-    for (let i = initialLen + 1; i <= 20; i++) {
-      steps.push({
-        ...lastStep,
-        log: `📌 Analyse-Schritt ${i} von 20: Algorithmus-Invariante und Komplexität verifiziert.`,
-        q: "Welche Eigenschaften wurden in diesem Durchlauf nachgewiesen?",
-        a: "Korrektes Ausführen aller Teilschritte nach Vorlesungsstandard (CLRS & Galles USFCA)."
-      });
-    }
-  }
-
   return steps;
 }
 
@@ -3002,11 +2988,127 @@ function simulateTopoSortDetailed(graphData, steps) {
 }
 
 function simulateFloydDetailed(graphData, steps) {
-  const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E'];
-  steps.push({ type: 'graph', nodes, startNode: 'A', treeEdges: [], codeLine: 0, log: "Floyd-Warshall (USFCA Galles) gestartet: Initialisiere Distanzmatrix D^(0).", q: "Was berechnet Floyd-Warshall?", a: "Kürzeste Pfade zwischen ALLEN Knotenpaaren (All-Pairs Shortest Paths)." });
+  const nodes = (graphData && graphData.nodes) || ['A', 'B', 'C', 'D'];
+  const edges = (graphData && graphData.edges) || [
+    { u: 'A', v: 'B', w: 3 },
+    { u: 'A', v: 'C', w: 8 },
+    { u: 'B', v: 'C', w: 1 },
+    { u: 'B', v: 'D', w: 7 },
+    { u: 'C', v: 'D', w: 2 },
+    { u: 'D', v: 'A', w: 2 }
+  ];
 
-  steps.push({ type: 'graph', nodes, startNode: 'B', treeEdges: [{ u: 'A', v: 'B' }], codeLine: 1, log: "Runde k=A: Teste Pfade über Zwischenknoten A: dist[i][j] = min(dist[i][j], dist[i][A] + dist[A][j]).", q: "Welche Komplexität hat Floyd-Warshall?", a: "O(V³) dreifache Schleife." });
-  steps.push({ type: 'graph', nodes, startNode: 'C', treeEdges: [{ u: 'A', v: 'B' }, { u: 'B', v: 'C' }], codeLine: 2, log: "Runde k=B: Aktualisiere Matrix D^(2) für Pfade über B.", q: "Kann Floyd-Warshall mit negativen Kanten arbeiten?", a: "Ja, solange keine negativen Zyklen existieren." });
+  const V = nodes.length;
+  const nodeMap = {};
+  nodes.forEach((n, idx) => { nodeMap[n] = idx; });
+
+  // Initialize Cost Matrix D and Path Matrix P
+  const cost = Array.from({ length: V }, () => new Array(V).fill(Infinity));
+  const path = Array.from({ length: V }, () => new Array(V).fill(-1));
+
+  for (let i = 0; i < V; i++) {
+    cost[i][i] = 0;
+    path[i][i] = i;
+  }
+
+  edges.forEach(e => {
+    const uIdx = nodeMap[e.u];
+    const vIdx = nodeMap[e.v];
+    if (uIdx !== undefined && vIdx !== undefined) {
+      cost[uIdx][vIdx] = e.w;
+      path[uIdx][vIdx] = uIdx;
+    }
+  });
+
+  const formatCost = (m) => m.map(row => row.map(val => (val === Infinity ? 'INF' : val)));
+  const formatPath = (m) => m.map(row => row.map(val => val));
+
+  steps.push({
+    type: 'floyd',
+    nodes,
+    edges,
+    k: -1,
+    i: -1,
+    j: -1,
+    costMatrix: formatCost(cost),
+    pathMatrix: formatPath(path),
+    codeLine: 0,
+    log: "Floyd-Warshall (USFCA Galles): Cost-Matrix D^(0) & Path-Matrix P^(0) initialisiert.",
+    q: "Was berechnet Floyd-Warshall?",
+    a: "Kürzeste Pfade zwischen ALLEN Knotenpaaren (All-Pairs Shortest Paths) in O(V³)."
+  });
+
+  // Triple nested loop k, i, j
+  for (let k = 0; k < V; k++) {
+    const kNode = nodes[k];
+    steps.push({
+      type: 'floyd',
+      nodes,
+      edges,
+      k,
+      i: -1,
+      j: -1,
+      costMatrix: formatCost(cost),
+      pathMatrix: formatPath(path),
+      codeLine: 1,
+      log: `🔄 STARTE RUNDE k = ${kNode} (Index ${k}): Teste alle Pfade über Zwischenknoten ${kNode}.`,
+      q: "Was bedeutet die Variable k in der äußersten Schleife?",
+      a: "k ist der Zwischenknoten, der für alle Pfade i ➔ k ➔ j auf Verkürzung getestet wird."
+    });
+
+    for (let i = 0; i < V; i++) {
+      for (let j = 0; j < V; j++) {
+        if (i === j) continue;
+
+        const iNode = nodes[i];
+        const jNode = nodes[j];
+
+        const directDist = cost[i][j];
+        const viaKDist = (cost[i][k] !== Infinity && cost[k][j] !== Infinity) ? cost[i][k] + cost[k][j] : Infinity;
+
+        let updated = false;
+        let logMsg = `Test ${iNode} ➔ ${jNode} über ${kNode}: D[${iNode}][${jNode}] = ${directDist === Infinity ? 'INF' : directDist}`;
+
+        if (viaKDist < directDist) {
+          cost[i][j] = viaKDist;
+          path[i][j] = path[k][j];
+          updated = true;
+          logMsg = `✨ RELAXATION! Pfad ${iNode} ➔ ${kNode} ➔ ${jNode} ist kürzer (${cost[i][k]} + ${cost[k][j]} = ${viaKDist} < ${directDist === Infinity ? 'INF' : directDist}). D[${iNode}][${jNode}] aktualisiert!`;
+        }
+
+        steps.push({
+          type: 'floyd',
+          nodes,
+          edges,
+          k,
+          i,
+          j,
+          updated,
+          costMatrix: formatCost(cost),
+          pathMatrix: formatPath(path),
+          codeLine: 4,
+          log: logMsg,
+          q: "Welche Entspannungsgleichung (Relaxation) nutzt Floyd-Warshall?",
+          a: "D[i][j] = min(D[i][j], D[i][k] + D[k][j])"
+        });
+      }
+    }
+  }
+
+  steps.push({
+    type: 'floyd',
+    nodes,
+    edges,
+    k: -1,
+    i: -1,
+    j: -1,
+    costMatrix: formatCost(cost),
+    pathMatrix: formatPath(path),
+    codeLine: 4,
+    log: "🎉 Floyd-Warshall beendet! Final Distanz- & Predecessor-Matrizen berechnet.",
+    q: "Kann Floyd-Warshall negative Kanten verarbeiten?",
+    a: "Ja, solange keine negativen Zyklen existieren (die durch D[i][i] < 0 erkannt würden)."
+  });
 }
 
 function simulateBinomialQueueDetailed(data, steps) {

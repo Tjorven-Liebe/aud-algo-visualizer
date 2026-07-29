@@ -18,8 +18,12 @@ export default function VisualizerCanvas({ currentStep, algoKey, rawData }) {
 
       if (currentStep.type === 'tree') {
         drawTreePremiumStyle(ctx, canvas, currentStep, algoKey, animatedNodesRef.current);
-      } else if (currentStep.type === 'graph') {
-        drawGraph(ctx, canvas, currentStep, rawData, algoKey);
+      } else if (currentStep.type === 'graph' || currentStep.type === 'floyd' || algoKey === 'floyd') {
+        if (algoKey === 'floyd' || currentStep.type === 'floyd') {
+          drawFloydWarshallPremiumStyle(ctx, canvas, currentStep, rawData);
+        } else {
+          drawGraph(ctx, canvas, currentStep, rawData, algoKey);
+        }
       } else if (currentStep.type === 'hash' || algoKey === 'openhash' || algoKey === 'closedhash') {
         drawHashTablePremiumStyle(ctx, canvas, currentStep, algoKey);
       } else {
@@ -763,6 +767,317 @@ function drawHashTablePremiumStyle(ctx, canvas, step, algoKey) {
       });
     });
   }
+
+  ctx.restore();
+}
+
+
+// -----------------------------------------------------------------------
+// 100% USFCA GALLES FLOYD-WARSHALL MATRIX & GRAPH RENDERER
+// -----------------------------------------------------------------------
+function drawFloydWarshallPremiumStyle(ctx, canvas, step, rawData) {
+  ctx.save();
+  const width = canvas.width;
+  const height = canvas.height;
+
+  const nodes = step.nodes || ['A', 'B', 'C', 'D'];
+  const edges = step.edges || [];
+  const V = nodes.length;
+  const costMatrix = step.costMatrix || Array.from({ length: V }, () => new Array(V).fill('INF'));
+  const pathMatrix = step.pathMatrix || Array.from({ length: V }, () => new Array(V).fill(-1));
+
+  const kIdx = step.k;
+  const iIdx = step.i;
+  const jIdx = step.j;
+
+  // Header Title
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '700 16px Inter, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('Floyd-Warshall All-Pairs Shortest Path (USFCA Galles Original)', width / 2, 28);
+
+  // 1. LEFT SIDE: COST MATRIX D & PATH MATRIX P
+  const matX = 30;
+  const matY = 55;
+  const cellW = Math.min(38, Math.floor(180 / (V + 1)));
+  const cellH = 26;
+
+  // Render Cost Matrix D
+  ctx.fillStyle = '#f59e0b';
+  ctx.font = '700 12px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Cost Matrix D', matX, matY);
+
+  // Column Headers
+  nodes.forEach((label, c) => {
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px Fira Code';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, matX + (c + 1) * cellW + cellW / 2, matY + 16);
+  });
+
+  // Matrix Grid D
+  for (let r = 0; r < V; r++) {
+    // Row Header
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px Fira Code';
+    ctx.textAlign = 'right';
+    ctx.fillText(nodes[r], matX + cellW - 6, matY + (r + 1) * cellH + cellH / 2 + 3);
+
+    for (let c = 0; c < V; c++) {
+      const x = matX + (c + 1) * cellW;
+      const y = matY + (r + 1) * cellH;
+
+      const isCurrentCell = (r === iIdx && c === jIdx);
+      const isViaCell = (r === iIdx && c === kIdx) || (r === kIdx && c === jIdx);
+      const isUpdatedCell = isCurrentCell && step.updated;
+
+      let bg = '#0f172a';
+      let border = '#334155';
+      let textColor = '#cbd5e1';
+
+      if (isUpdatedCell) {
+        bg = '#064e3b'; border = '#34d399'; textColor = '#6ee7b7';
+      } else if (isCurrentCell) {
+        bg = '#450a0a'; border = '#ef4444'; textColor = '#fca5a5';
+      } else if (isViaCell) {
+        bg = '#1e1b4b'; border = '#818cf8'; textColor = '#c7d2fe';
+      }
+
+      ctx.fillStyle = bg;
+      ctx.strokeStyle = border;
+      ctx.lineWidth = (isCurrentCell || isUpdatedCell) ? 2 : 1;
+      ctx.fillRect(x, y, cellW, cellH);
+      ctx.strokeRect(x, y, cellW, cellH);
+
+      const val = costMatrix[r] ? costMatrix[r][c] : 'INF';
+      ctx.fillStyle = textColor;
+      ctx.font = '700 11px Fira Code, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(val, x + cellW / 2, y + cellH / 2);
+    }
+  }
+
+  // Render Path Matrix P
+  const pathMatX = matX + (V + 1) * cellW + 25;
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = '700 12px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Path Predecessor Matrix P', pathMatX, matY);
+
+  nodes.forEach((label, c) => {
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px Fira Code';
+    ctx.textAlign = 'center';
+    ctx.fillText(label, pathMatX + (c + 1) * cellW + cellW / 2, matY + 16);
+  });
+
+  for (let r = 0; r < V; r++) {
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '600 11px Fira Code';
+    ctx.textAlign = 'right';
+    ctx.fillText(nodes[r], pathMatX + cellW - 6, matY + (r + 1) * cellH + cellH / 2 + 3);
+
+    for (let c = 0; c < V; c++) {
+      const x = pathMatX + (c + 1) * cellW;
+      const y = pathMatX + (r + 1) * cellH;
+
+      const isCurrentCell = (r === iIdx && c === jIdx);
+
+      ctx.fillStyle = isCurrentCell ? '#0c4a6e' : '#0f172a';
+      ctx.strokeStyle = isCurrentCell ? '#38bdf8' : '#334155';
+      ctx.lineWidth = isCurrentCell ? 2 : 1;
+      ctx.fillRect(x, y, cellW, cellH);
+      ctx.strokeRect(x, y, cellW, cellH);
+
+      const pVal = pathMatrix[r] ? pathMatrix[r][c] : -1;
+      const pLabel = (pVal >= 0 && pVal < V) ? nodes[pVal] : '-';
+      ctx.fillStyle = isCurrentCell ? '#38bdf8' : '#94a3b8';
+      ctx.font = '700 11px Fira Code, monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(pLabel, x + cellW / 2, y + cellH / 2);
+    }
+  }
+
+  // 2. BOTTOM LEFT: TRIANGULAR RELAXATION DIAGRAM (USFCA Galles Original)
+  const diagX = 40;
+  const diagY = height - 150;
+  const diagW = 380;
+  const diagH = 135;
+
+  ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.roundRect(diagX, diagY, diagW, diagH, 10);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#f59e0b';
+  ctx.font = '700 11px Inter, sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('📐 Triangular Relaxation Test (D[i][j] vs D[i][k] + D[k][j])', diagX + 12, diagY + 18);
+
+  if (iIdx >= 0 && jIdx >= 0 && kIdx >= 0) {
+    const iNode = nodes[iIdx];
+    const jNode = nodes[jIdx];
+    const kNode = nodes[kIdx];
+
+    const iX = diagX + 45, iY = diagY + 95;
+    const jX = diagX + 335, jY = diagY + 95;
+    const kX = diagX + 190, kY = diagY + 45;
+
+    // Draw Node Circles
+    const drawDiagNode = (label, x, y, col) => {
+      ctx.fillStyle = '#1e293b';
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x, y, 16, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#fff'; ctx.font = '700 12px Inter'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(label, x, y);
+    };
+
+    drawDiagNode(iNode, iX, iY, '#ef4444');
+    drawDiagNode(jNode, jX, jY, '#ef4444');
+    drawDiagNode(kNode, kX, kY, '#f59e0b');
+
+    // Direct Edge i -> j (bottom)
+    const directW = costMatrix[iIdx][jIdx];
+    ctx.strokeStyle = step.updated ? '#ef4444' : '#64748b';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(iX + 16, iY); ctx.lineTo(jX - 16, jY); ctx.stroke();
+    ctx.fillStyle = '#94a3b8'; ctx.font = '600 10px Fira Code'; ctx.textAlign = 'center';
+    ctx.fillText(`Direkt: ${directW}`, (iX + jX) / 2, iY + 16);
+
+    // Via Edge i -> k -> j
+    const ikW = costMatrix[iIdx][kIdx];
+    const kjW = costMatrix[kIdx][jIdx];
+
+    ctx.strokeStyle = '#818cf8';
+    ctx.beginPath(); ctx.moveTo(iX + 12, iY - 12); ctx.lineTo(kX - 12, kY + 12); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(kX + 12, kY + 12); ctx.lineTo(jX - 12, jY - 12); ctx.stroke();
+
+    ctx.fillStyle = '#c7d2fe'; ctx.font = '600 10px Fira Code';
+    ctx.fillText(`D[i][k]=${ikW}`, (iX + kX) / 2 - 10, (iY + kY) / 2);
+    ctx.fillText(`D[k][j]=${kjW}`, (kX + jX) / 2 + 10, (kY + jY) / 2);
+  } else {
+    ctx.fillStyle = '#64748b';
+    ctx.font = '500 12px Inter';
+    ctx.textAlign = 'center';
+    ctx.fillText('Starte Animation, um Pfad-Entspannungen zu sehen.', diagX + diagW / 2, diagY + diagH / 2 + 10);
+  }
+
+  // 3. RIGHT SIDE: DIRECTED GRAPH WITH ARROWS
+  const graphCenterX = width - 230;
+  const graphCenterY = height / 2 + 15;
+  const graphRadius = 145;
+
+  const positions = {};
+  nodes.forEach((key, idx) => {
+    const angle = (2 * Math.PI * idx / V) - Math.PI / 2;
+    positions[key] = {
+      x: graphCenterX + graphRadius * Math.cos(angle),
+      y: graphCenterY + graphRadius * Math.sin(angle)
+    };
+  });
+
+  // Draw Graph Edges with Directed Arrowheads
+  edges.forEach(e => {
+    const uPos = positions[e.u];
+    const vPos = positions[e.v];
+    if (!uPos || !vPos) return;
+
+    const uIdx = nodeMap[e.u];
+    const vIdx = nodeMap[e.v];
+
+    const isActiveVia = (uIdx === iIdx && vIdx === kIdx) || (uIdx === kIdx && vIdx === jIdx);
+    const isActiveDirect = (uIdx === iIdx && vIdx === jIdx);
+
+    let strokeCol = '#334155';
+    let lineW = 2;
+
+    if (isActiveDirect) {
+      strokeCol = step.updated ? '#4ade80' : '#ef4444';
+      lineW = 4;
+    } else if (isActiveVia) {
+      strokeCol = '#818cf8';
+      lineW = 3.5;
+    }
+
+    ctx.save();
+    ctx.strokeStyle = strokeCol;
+    ctx.lineWidth = lineW;
+    ctx.beginPath();
+    ctx.moveTo(uPos.x, uPos.y);
+    ctx.lineTo(vPos.x, vPos.y);
+    ctx.stroke();
+
+    // Arrowhead at target vPos
+    const dx = vPos.x - uPos.x;
+    const dy = vPos.y - uPos.y;
+    const angle = Math.atan2(dy, dx);
+    const nodeR = 24;
+    const arrowX = vPos.x - nodeR * Math.cos(angle);
+    const arrowY = vPos.y - nodeR * Math.sin(angle);
+
+    ctx.fillStyle = strokeCol;
+    ctx.beginPath();
+    ctx.moveTo(arrowX, arrowY);
+    ctx.lineTo(arrowX - 10 * Math.cos(angle - Math.PI / 6), arrowY - 10 * Math.sin(angle - Math.PI / 6));
+    ctx.lineTo(arrowX - 10 * Math.cos(angle + Math.PI / 6), arrowY - 10 * Math.sin(angle + Math.PI / 6));
+    ctx.closePath();
+    ctx.fill();
+
+    // Weight Badge
+    const midX = uPos.x + (vPos.x - uPos.x) * 0.45;
+    const midY = uPos.y + (vPos.y - uPos.y) * 0.45;
+    ctx.fillStyle = '#070a12';
+    ctx.strokeStyle = strokeCol;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.roundRect(midX - 12, midY - 10, 24, 20, 4); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#f59e0b'; ctx.font = '700 11px Fira Code'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(e.w, midX, midY + 1);
+    ctx.restore();
+  });
+
+  // Draw Graph Nodes
+  nodes.forEach((key, idx) => {
+    const pos = positions[key];
+    if (!pos) return;
+
+    const isKNode = idx === kIdx;
+    const isINode = idx === iIdx;
+    const isJNode = idx === jIdx;
+
+    let fillCol = '#1e293b';
+    let strokeCol = '#38bdf8';
+
+    if (isKNode) {
+      fillCol = '#78350f'; strokeCol = '#f59e0b';
+    } else if (isINode || isJNode) {
+      fillCol = '#450a0a'; strokeCol = '#ef4444';
+    }
+
+    ctx.save();
+    ctx.fillStyle = fillCol;
+    ctx.strokeStyle = strokeCol;
+    ctx.lineWidth = (isKNode || isINode || isJNode) ? 3.5 : 2;
+    ctx.beginPath(); ctx.arc(pos.x, pos.y, 22, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+
+    ctx.fillStyle = '#f8fafc';
+    ctx.font = '700 15px Inter';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(key, pos.x, pos.y);
+
+    if (isKNode) {
+      ctx.fillStyle = '#f59e0b'; ctx.font = '700 10px Inter';
+      ctx.fillText('⚡ k', pos.x, pos.y - 32);
+    }
+    ctx.restore();
+  });
 
   ctx.restore();
 }
