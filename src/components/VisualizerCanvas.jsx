@@ -209,21 +209,13 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
     if (algoKey === 'avl' && node.height !== undefined) {
       const balance = (node.left ? node.left.height : 0) - (node.right ? node.right.height : 0);
 
-      // Height Badge ABOVE Node
+      // Galles Height Number Label ABOVE Node (e.g. 3, 2, 1)
       ctx.save();
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
-      ctx.strokeStyle = '#38bdf8';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(pos.currX - 24, pos.currY - 46, 48, 18, 5);
-      ctx.fill();
-      ctx.stroke();
-
       ctx.fillStyle = '#38bdf8';
-      ctx.font = '600 11px Fira Code, monospace';
+      ctx.font = '700 13px Fira Code, monospace';
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(`h = ${node.height}`, pos.currX, pos.currY - 37);
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(`${node.height}`, pos.currX - 14, pos.currY - 26);
       ctx.restore();
 
       // Balance Factor Badge BELOW Node
@@ -232,19 +224,19 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
       const bText = `B = ${balance > 0 ? '+' + balance : balance}`;
 
       ctx.save();
-      ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
       ctx.strokeStyle = bColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.roundRect(pos.currX - 24, pos.currY + 28, 48, 18, 5);
+      ctx.roundRect(pos.currX - 22, pos.currY + 28, 44, 17, 5);
       ctx.fill();
       ctx.stroke();
 
       ctx.fillStyle = bColor;
-      ctx.font = '700 11px Fira Code, monospace';
+      ctx.font = '700 10.5px Fira Code, monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(bText, pos.currX, pos.currY + 37);
+      ctx.fillText(bText, pos.currX, pos.currY + 365 / 10);
       ctx.restore();
     }
 
