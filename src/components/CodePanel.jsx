@@ -34,7 +34,7 @@ export default function CodePanel({ codeLines, fileName, activeLineIndex }) {
         lineHeight: 1.6,
         backgroundColor: '#090d16',
         padding: '14px',
-        maxHeight: '260px',
+        maxHeight: '380px',
         overflowY: 'auto'
       }}>
         {codeLines.map((line, idx) => {
