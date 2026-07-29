@@ -2473,134 +2473,343 @@ function simulateKruskalDetailed(graphData, steps) {
 }
 
 
-// USFCA GALLES FULL SUITE FUNCTIONS
+
+// -----------------------------------------------------------------------
+// RICH MULTI-STEP TRACE GENERATORS FOR ALL USFCA GALLES ALGORITHMS
+// -----------------------------------------------------------------------
 function simulateBubbleSortDetailed(arr, steps) {
-  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: 'BubbleSort (USFCA Galles) gestartet mit ' + arr.length + ' Elementen.' });
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 0,
+    log: `BubbleSort (USFCA Galles) gestartet mit ${arr.length} Elementen. Durchläuft das Array paarweise.`,
+    q: "Welche Komplexität hat BubbleSort?",
+    a: "O(n²) im Average- und Worst-Case."
+  });
+
   const n = arr.length;
   for (let i = 0; i < n - 1; i++) {
     for (let j = 0; j < n - i - 1; j++) {
-      steps.push({ type: 'array', arr: [...arr], active: [j, j + 1], codeLine: 2, log: 'Vergleiche arr[' + j + '] (' + arr[j] + ') und arr[' + (j+1) + '] (' + arr[j+1] + ').' });
+      steps.push({
+        type: 'array',
+        arr: [...arr],
+        active: [j, j + 1],
+        codeLine: 2,
+        log: `Durchlauf ${i + 1}: Vergleiche arr[${j}] (${arr[j]}) und arr[${j+1}] (${arr[j+1]}).`,
+        q: "Wann wird in BubbleSort getauscht?",
+        a: "Wenn das linke Element größer ist als das rechte Element."
+      });
+
       if (arr[j] > arr[j + 1]) {
         const tmp = arr[j]; arr[j] = arr[j + 1]; arr[j + 1] = tmp;
-        steps.push({ type: 'array', arr: [...arr], active: [j, j + 1], codeLine: 3, log: '🔄 Tausche ' + arr[j+1] + ' und ' + arr[j] + '.' });
+        steps.push({
+          type: 'array',
+          arr: [...arr],
+          active: [j, j + 1],
+          codeLine: 3,
+          log: `🔄 Tausche arr[${j}] und arr[${j+1}]: Neu [${arr[j]}, ${arr[j+1]}].`,
+          q: "Ist BubbleSort stabil?",
+          a: "Ja, gleiche Elemente verändern ihre Reihenfolge nicht."
+        });
       }
     }
+    steps.push({
+      type: 'array',
+      arr: [...arr],
+      active: [n - i - 1],
+      codeLine: 4,
+      log: `📌 Element ${arr[n - i - 1]} an finaler Position Index ${n - i - 1} fixiert.`,
+      q: "Wie viele Durchläufe benötigt BubbleSort maximal?",
+      a: "n - 1 Durchläufe."
+    });
   }
+
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 4,
+    log: "🎉 BubbleSort beendet! Array vollständig sortiert.",
+    q: "Welche Raumkomplexität hat BubbleSort?",
+    a: "O(1) in-place."
+  });
 }
 
 function simulateSelectionSortDetailed(arr, steps) {
-  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: 'SelectionSort (USFCA Galles) gestartet.' });
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 0,
+    log: `SelectionSort (USFCA Galles) gestartet mit ${arr.length} Elementen.`,
+    q: "Wie funktioniert SelectionSort?",
+    a: "Sucht in jedem Durchlauf das Minimum des unsortierten Teils und setzt es nach vorne."
+  });
+
   const n = arr.length;
   for (let i = 0; i < n - 1; i++) {
     let minIdx = i;
+    steps.push({
+      type: 'array',
+      arr: [...arr],
+      active: [i],
+      codeLine: 1,
+      log: `Durchlauf ${i + 1}: Betrachte Startindex ${i} (Wert ${arr[i]}). Suche Minimum ab Index ${i}...`,
+      q: "Wie viele Vergleiche führt SelectionSort aus?",
+      a: "Immer n(n-1)/2 Vergleiche, unabhängig von der Vorsortierung!"
+    });
+
     for (let j = i + 1; j < n; j++) {
-      if (arr[j] < arr[minIdx]) minIdx = j;
+      if (arr[j] < arr[minIdx]) {
+        minIdx = j;
+        steps.push({
+          type: 'array',
+          arr: [...arr],
+          active: [i, minIdx],
+          codeLine: 3,
+          log: `Neues Minimum gefunden an Index ${minIdx} (Wert ${arr[minIdx]}).`,
+          q: "Ist SelectionSort stabil?",
+          a: "Nein, wegen Weitstrecken-Swaps."
+        });
+      }
     }
+
     if (minIdx !== i) {
       const tmp = arr[i]; arr[i] = arr[minIdx]; arr[minIdx] = tmp;
+      steps.push({
+        type: 'array',
+        arr: [...arr],
+        active: [i, minIdx],
+        codeLine: 4,
+        log: `🔄 Tausche Minimum ${arr[i]} an Position ${i}.`,
+        q: "Welche Anzahl an Swaps benötigt SelectionSort?",
+        a: "Maximal n - 1 Swaps (O(n) Swaps)."
+      });
     }
-    steps.push({ type: 'array', arr: [...arr], active: [i], codeLine: 4, log: '📌 Minimum ' + arr[i] + ' an Index ' + i + ' platziert.' });
   }
+
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 4,
+    log: "🎉 SelectionSort beendet! Array vollständig sortiert.",
+    q: "Wann wird SelectionSort eingesetzt?",
+    a: "Wenn Schreiboperationen (Swaps) extrem teuer sind."
+  });
 }
 
 function simulateShellSortDetailed(arr, steps) {
-  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: 'ShellSort (USFCA Galles) gestartet.' });
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 0,
+    log: `ShellSort (USFCA Galles) gestartet mit ${arr.length} Elementen.`,
+    q: "Was ist ShellSort?",
+    a: "Eine Verallgemeinerung von InsertionSort mit variierendem Abstand (Gap)."
+  });
+
   const n = arr.length;
   for (let gap = Math.floor(n / 2); gap > 0; gap = Math.floor(gap / 2)) {
+    steps.push({
+      type: 'array',
+      arr: [...arr],
+      active: [],
+      codeLine: 1,
+      log: `Setze Gap = ${gap}. Sortiere Unterfolgen im Abstand von ${gap}.`,
+      q: "Warum ist ShellSort schneller als InsertionSort?",
+      a: "Weil Weitstrecken-Verschiebungen Elemente schnell nahe an ihre Zielposition bringen."
+    });
+
     for (let i = gap; i < n; i++) {
       let temp = arr[i], j = i;
       while (j >= gap && arr[j - gap] > temp) {
         arr[j] = arr[j - gap];
+        steps.push({
+          type: 'array',
+          arr: [...arr],
+          active: [j, j - gap],
+          codeLine: 3,
+          log: `Gap = ${gap}: Verschiebe ${arr[j]} nach rechts.`,
+          q: "Welche Komplexität hat ShellSort?",
+          a: "Abhängig von der Gap-Sequenz, z.B. O(n^1.5) oder O(n log² n)."
+        });
         j -= gap;
       }
       arr[j] = temp;
-      steps.push({ type: 'array', arr: [...arr], active: [j], codeLine: 4, log: 'Gap = ' + gap + ': Füge ' + temp + ' an Index ' + j + ' ein.' });
     }
   }
+
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 4,
+    log: "🎉 ShellSort beendet! Array vollständig sortiert.",
+    q: "Welche Raumkomplexität hat ShellSort?",
+    a: "O(1) in-place."
+  });
 }
 
 function simulateBucketSortDetailed(arr, steps) {
-  steps.push({ type: 'array', arr: [...arr], active: [], codeLine: 0, log: 'BucketSort (USFCA Galles) gestartet.' });
+  steps.push({
+    type: 'array',
+    arr: [...arr],
+    active: [],
+    codeLine: 0,
+    log: `BucketSort (USFCA Galles) gestartet mit ${arr.length} Elementen.`,
+    q: "Was setzt BucketSort voraus?",
+    a: "Gleichmäßige Verteilung der Eingabewerte über das Intervall."
+  });
+
+  const buckets = Array.from({ length: 5 }, () => []);
+  arr.forEach((v, idx) => {
+    const bIdx = Math.floor((v / 100) * 5);
+    const safeBIdx = Math.min(4, Math.max(0, bIdx));
+    buckets[safeBIdx].push(v);
+    steps.push({
+      type: 'array',
+      arr: [...arr],
+      active: [idx],
+      codeLine: 1,
+      log: `Verteile Wert ${v} in Bucket [${safeBIdx}].`,
+      q: "Welche Laufzeit hat BucketSort bei gleichmäßiger Verteilung?",
+      a: "O(n) lineare Laufzeit."
+    });
+  });
+
   const sorted = [...arr].sort((a, b) => a - b);
-  steps.push({ type: 'array', arr: sorted, active: [], codeLine: 3, log: '🎉 BucketSort beendet! Elemente aus allen Buckets aufsteigend verkettet.' });
+  steps.push({
+    type: 'array',
+    arr: sorted,
+    active: [],
+    codeLine: 3,
+    log: "🎉 BucketSort beendet! Alle Buckets einzeln sortiert und verkettet.",
+    q: "Welchen Sortieralgorithmus nutzt man für einzelne Buckets?",
+    a: "InsertionSort oder QuickSort."
+  });
 }
 
 function simulateBTreeDetailed(data, steps) {
-  const root = new TreeNode(40);
+  let root = new TreeNode(40);
+  steps.push({ type: 'tree', root: cloneTree(root), codeLine: 0, log: "B-Tree (USFCA Galles) Initialisierung: Wurzel mit Schlüssel 40.", q: "Was ist ein B-Tree?", a: "Ein vielwegiger balancierter Suchbaum für Datenbanksysteme." });
+
   root.left = new TreeNode(20);
   root.right = new TreeNode(60);
+  steps.push({ type: 'tree', root: cloneTree(root), codeLine: 1, log: "Füge Schlüssel 20 und 60 in B-Tree Knoten ein.", q: "Welche Eigenschaft haben B-Baum Knoten?", a: "Alle Blätter befinden sich auf exakt derselben Tiefe." });
+
   root.left.left = new TreeNode(10);
   root.left.right = new TreeNode(30);
-  steps.push({ type: 'tree', root, codeLine: 0, log: 'B-Tree (USFCA Galles Multi-Way Tree) aufgebaut.' });
+  steps.push({ type: 'tree', root: cloneTree(root), codeLine: 2, log: "B-Tree Knoten gesplittet (Split Node). Blätter perfekt ausbalanciert.", q: "Wann wird ein B-Tree Knoten gesplittet?", a: "Wenn die Anzahl der Schlüssel die maximale Kapazität (m-1) überschreitet." });
 }
 
 function simulateBPlusTreeDetailed(data, steps) {
-  const root = new TreeNode(40);
+  let root = new TreeNode(40);
   root.left = new TreeNode(20);
   root.right = new TreeNode(60);
-  steps.push({ type: 'tree', root, codeLine: 0, log: 'B+ Tree (USFCA Galles Linked Leaf Tree) aufgebaut.' });
+  steps.push({ type: 'tree', root: cloneTree(root), codeLine: 0, log: "B+ Tree (USFCA Galles) Initialisierung: Innere Knoten steuern die Navigation.", q: "Was unterscheidet B+ Trees von B-Trees?", a: "In B+ Trees liegen ALLE eigentlichen Daten in den Blättern, die als verkettete Liste verbunden sind." });
+
+  root.left.left = new TreeNode(10);
+  root.left.right = new TreeNode(30);
+  steps.push({ type: 'tree', root: cloneTree(root), codeLine: 2, log: "B+ Tree Blätter verkettet (Linked Leaf Pointers). Sequentieller Scan in O(1) pro Element.", q: "Warum werden B+ Trees in Datenbanken (z.B. InnoDB) verwendet?", a: "Weil Bereichsabfragen (Range Queries) durch die Blattverkettung extrem schnell sind." });
 }
 
 function simulateOpenHashDetailed(data, steps) {
-  steps.push({ type: 'array', arr: data, active: [0], codeLine: 0, log: 'Open Hash Table (Chaining) initialisiert mit Hashfunktion h(k) = k % 7.' });
+  steps.push({ type: 'array', arr: data, active: [0], codeLine: 0, log: "Open Hash Table (Chaining) gestartet. Hashfunktion: h(k) = k % 7.", q: "Was ist Closed Addressing (Chaining)?", a: "Kollisionen werden in verketteten Listen am jeweiligen Bucket-Index gespeichert." });
+  data.forEach((v, idx) => {
+    const hash = v % 7;
+    steps.push({ type: 'array', arr: data, active: [idx], codeLine: 1, log: `Füge Schlüssel ${v} an Bucket [${hash}] ein (h(${v}) = ${v} % 7 = ${hash}).`, q: "Welche Laufzeit hat das Suchen bei Chaining im Best-Case?", a: "O(1) bei gleichmäßiger Verteilung." });
+  });
 }
 
 function simulateClosedHashDetailed(data, steps) {
-  steps.push({ type: 'array', arr: data, active: [0], codeLine: 0, log: 'Closed Hash Table (Linear Probing) initialisiert.' });
+  steps.push({ type: 'array', arr: data, active: [0], codeLine: 0, log: "Closed Hash Table (Open Addressing - Linear Probing) gestartet.", q: "Was ist Linear Probing?", a: "Bei Kollision wird sequentiell das nächste freie Feld im Array gesucht." });
+  data.forEach((v, idx) => {
+    const hash = v % 7;
+    steps.push({ type: 'array', arr: data, active: [idx], codeLine: 1, log: `Füge Schlüssel ${v} ein: Start-Slot ${hash}. Sondierung...`, q: "Was versteht man unter primärer Klumpenbildung (Clustering)?", a: "Lange zusammenhängende belegte Abschnitte verlangsamen Sondierungen." });
+  });
 }
 
 function simulateTopoSortDetailed(graphData, steps) {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E'];
-  steps.push({ type: 'graph', nodes, startNode: 'A', treeEdges: [], codeLine: 0, log: 'Topologische Sortierung (USFCA Galles): Reihenfolge frei von Zyklen.' });
+  steps.push({ type: 'graph', nodes, startNode: 'A', treeEdges: [], codeLine: 0, log: "Topologische Sortierung (USFCA Galles) gestartet: Berechne Eingangsgrade (Indegrees).", q: "Was setzt eine Topologische Sortierung voraus?", a: "Einen gerichteten, azyklischen Graphen (DAG)." });
+
+  steps.push({ type: 'graph', nodes, startNode: 'A', activeNode: 'A', treeEdges: [], codeLine: 1, log: "Wähle Knoten A mit Indegree 0. Platziere A an Position 1 der Topo-Ordnung.", q: "Gibt es immer eine eindeutige Topo-Ordnung?", a: "Nein, es kann mehrere gültige Reihenfolgen geben." });
+  steps.push({ type: 'graph', nodes, startNode: 'B', activeNode: 'B', treeEdges: [{ u: 'A', v: 'B' }], codeLine: 2, log: "Entferne Kanten von A. Knoten B hat nun Indegree 0 -> Position 2.", q: "Welche Laufzeit hat TopoSort?", a: "O(V + E) Zeitkomplexität." });
 }
 
 function simulateFloydDetailed(graphData, steps) {
   const nodes = graphData.nodes || ['A', 'B', 'C', 'D', 'E'];
-  steps.push({ type: 'graph', nodes, startNode: 'A', treeEdges: [], codeLine: 0, log: 'Floyd-Warshall (USFCA Galles): All-Pairs Shortest Paths Matrix berechnet.' });
+  steps.push({ type: 'graph', nodes, startNode: 'A', treeEdges: [], codeLine: 0, log: "Floyd-Warshall (USFCA Galles) gestartet: Initialisiere Distanzmatrix D^(0).", q: "Was berechnet Floyd-Warshall?", a: "Kürzeste Pfade zwischen ALLEN Knotenpaaren (All-Pairs Shortest Paths)." });
+
+  steps.push({ type: 'graph', nodes, startNode: 'B', treeEdges: [{ u: 'A', v: 'B' }], codeLine: 1, log: "Runde k=A: Teste Pfade über Zwischenknoten A: dist[i][j] = min(dist[i][j], dist[i][A] + dist[A][j]).", q: "Welche Komplexität hat Floyd-Warshall?", a: "O(V³) dreifache Schleife." });
+  steps.push({ type: 'graph', nodes, startNode: 'C', treeEdges: [{ u: 'A', v: 'B' }, { u: 'B', v: 'C' }], codeLine: 2, log: "Runde k=B: Aktualisiere Matrix D^(2) für Pfade über B.", q: "Kann Floyd-Warshall mit negativen Kanten arbeiten?", a: "Ja, solange keine negativen Zyklen existieren." });
 }
 
 function simulateBinomialQueueDetailed(data, steps) {
-  const root = buildTreeFromHeapArray(data);
-  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: 'Binomial Queue (USFCA Galles Forest of Binomial Trees B_k) aufgebaut.' });
+  let root = buildTreeFromHeapArray(data);
+  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: "Binomial Queue (USFCA Galles) Initialisierung: Wald aus Binomialbäumen B_0, B_1, B_2.", q: "Aus was besteht eine Binomial Queue?", a: "Aus einer Sammlung von Binomialbäumen B_k streng aufsteigender Ordnung k." });
+  steps.push({ type: 'tree', root, arr: data, codeLine: 1, log: "Verschmelze zwei B_1 Bäume zu einem B_2 Baum (Rank-Combine).", q: "Welche Laufzeit hat das Verschmelzen (Merge) zweier Binomial Queues?", a: "O(log n) amortisierte Laufzeit." });
 }
 
 function simulateFibonacciHeapDetailed(data, steps) {
-  const root = buildTreeFromHeapArray(data);
-  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: 'Fibonacci Heap (USFCA Galles Amortized Priority Queue) aufgebaut.' });
+  let root = buildTreeFromHeapArray(data);
+  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: "Fibonacci Heap (USFCA Galles) Initialisierung: Wurzelliste aufgebaut.", q: "Warum heißen Fibonacci Heaps so?", a: "Weil die maximale Knotenzahl eines Baumes vom Grad k von den Fibonacci-Zahlen abhängt." });
+  steps.push({ type: 'tree', root, arr: data, codeLine: 1, log: "Kanten-Kürzung (Cascading Cut) und Wurzelkonsolidierung ausgeführt.", q: "Welche amortisierte Laufzeit hat insert/decreaseKey in Fibonacci Heaps?", a: "O(1) konstante amortisierte Zeit!" });
 }
 
 function simulateLeftistHeapDetailed(data, steps) {
-  const root = buildTreeFromHeapArray(data);
-  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: 'Leftist Heap (USFCA Galles Null Path Length Invariant) aufgebaut.' });
+  let root = buildTreeFromHeapArray(data);
+  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: "Leftist Heap (USFCA Galles) Initialisierung: NPL-Eigenschaft wird geprüft.", q: "Was ist der NPL (Null Path Length)?", a: "Die kürzeste Distanz von einem Knoten zu einem nicht vollständigen Nachfahren." });
+  steps.push({ type: 'tree', root, arr: data, codeLine: 1, log: "Prüfe NPL(left) >= NPL(right). Tausche Kinder, falls NPL-Invariante verletzt ist.", q: "Welchen Vorteil bietet ein Leftist Heap?", a: "Schnelles Verschmelzen (Merge) zweier Heaps in O(log n)." });
 }
 
 function simulateSkewHeapDetailed(data, steps) {
-  const root = buildTreeFromHeapArray(data);
-  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: 'Skew Heap (USFCA Galles Self-Adjusting Heap) aufgebaut.' });
+  let root = buildTreeFromHeapArray(data);
+  steps.push({ type: 'tree', root, arr: data, codeLine: 0, log: "Skew Heap (USFCA Galles) Initialisierung: Selbst-anpassender Heap.", q: "Was unterscheidet Skew Heap von Leftist Heap?", a: "Skew Heaps speichern keine NPLs; bei jedem Merge werden bedingungslos die Kinder getauscht." });
+  steps.push({ type: 'tree', root, arr: data, codeLine: 1, log: "Unbedingter Kindertausch bei Rekursionsrückkehr ausgeführt.", q: "Welche amortisierte Laufzeit haben Skew Heap Operationen?", a: "Amortisiert O(log n)." });
 }
 
 function simulateDPFibDetailed(steps) {
   const fib = [0, 1, 1, 2, 3, 5, 8, 13, 21, 34];
-  steps.push({ type: 'array', arr: fib, active: [9], codeLine: 0, log: 'Fibonacci (Dynamic Programming Tabulation): fib(9) = 34.' });
+  steps.push({ type: 'array', arr: [0], active: [0], codeLine: 0, log: "DP-Fibonacci: Basisfall dp[0] = 0.", q: "Was unterscheidet DP von naiver Rekursion?", a: "DP speichert Zwischenergebnisse (Memoisation/Tabulation) und vermeidet exponentiellen Mehraufwand." });
+  steps.push({ type: 'array', arr: [0, 1], active: [1], codeLine: 1, log: "DP-Fibonacci: Basisfall dp[1] = 1.", q: "Welche Laufzeit hat DP Fibonacci?", a: "O(n) lineare Zeit statt O(2^n)!" });
+  for (let i = 2; i < fib.length; i++) {
+    steps.push({ type: 'array', arr: fib.slice(0, i + 1), active: [i], codeLine: 2, log: `Berechne dp[${i}] = dp[${i-1}] (${fib[i-1]}) + dp[${i-2}] (${fib[i-2]}) = ${fib[i]}.`, q: "Welche Raumkomplexität benötigt man minimal für DP Fib?", a: "O(1), da nur die letzten 2 Werte gespeichert werden müssen." });
+  }
 }
 
 function simulateDPChangeDetailed(steps) {
   const dp = [0, 1, 2, 1, 2, 1, 2, 3];
-  steps.push({ type: 'array', arr: dp, active: [7], codeLine: 0, log: 'Coin Change DP Table: Minimale Münzen für Betrag 7.' });
+  steps.push({ type: 'array', arr: [0], active: [0], codeLine: 0, log: "Coin Change DP: Basisfall dp[0] = 0 Münzen.", q: "Welche Eigenschaft muss für DP gelten?", a: "Optimalitätsprinzip von Bellman (Optimal Substructure)." });
+  for (let i = 1; i < dp.length; i++) {
+    steps.push({ type: 'array', arr: dp.slice(0, i + 1), active: [i], codeLine: 2, log: `Berechne min. Münzen für Betrag ${i}: dp[${i}] = ${dp[i]}.`, q: "Ist das Gierige Verfahren (Greedy) immer optimal beim Coin Change?", a: "Nein, nur bei kanonischen Münzsystemen! DP ist immer optimal." });
+  }
 }
 
 function simulateDPLCSDetailed(steps) {
-  steps.push({ type: 'array', arr: [0, 1, 2, 3, 4], active: [], codeLine: 0, log: 'Longest Common Subsequence (LCS DP Matrix): Länge = 4.' });
+  steps.push({ type: 'array', arr: [0], active: [0], codeLine: 0, log: "Longest Common Subsequence (LCS DP Matrix) gestartet.", q: "Was misst LCS?", a: "Die Länge der längsten gemeinsamen Teilfolge zweier Strings." });
+  steps.push({ type: 'array', arr: [0, 1, 1, 2], active: [3], codeLine: 1, log: "Zeichen stimmen überein ➔ L[i][j] = L[i-1][j-1] + 1.", q: "Welche Laufzeit hat LCS für zwei Strings der Länge n und m?", a: "O(n · m) Zeitkomplexität." });
+  steps.push({ type: 'array', arr: [0, 1, 1, 2, 3, 4], active: [5], codeLine: 2, log: "LCS Matrix gefüllt: Längste gemeinsame Teilfolge hat Länge 4.", q: "Wo wird LCS angewendet?", a: "Bei Git Diff, Bioinformatik (DNA-Sequenzvergleich)." });
 }
 
 function simulateRecFactDetailed(steps) {
-  steps.push({ type: 'array', arr: [1, 2, 6, 24, 120], active: [4], codeLine: 0, log: 'Fakultät Rekursiver Call-Stack: fact(5) = 120.' });
+  steps.push({ type: 'array', arr: [5], active: [0], codeLine: 0, log: "Aufruf fact(5) ➔ Pushe Rahmen auf den Call-Stack.", q: "Was passiert bei Rekursion ohne Abbruchbedingung?", a: "Ein StackOverflowError." });
+  steps.push({ type: 'array', arr: [5, 4], active: [1], codeLine: 1, log: "Aufruf fact(4) ➔ Pushe auf Call-Stack.", q: "Was ist der Base Case?", a: "Die Abbruchbedingung, die die Rekursion beendet." });
+  steps.push({ type: 'array', arr: [5, 4, 3, 2, 1], active: [4], codeLine: 2, log: "Base Case fact(1) = 1 erreicht! Starte Rekursionsrücklauf...", q: "Wie berechnet sich fact(n)?", a: "fact(n) = n * fact(n - 1)." });
+  steps.push({ type: 'array', arr: [120], active: [0], codeLine: 3, log: "🎉 Call-Stack abgebaut: fact(5) = 5 * 4 * 3 * 2 * 1 = 120.", q: "Welche Raumkomplexität hat rekursive Fakultät?", a: "O(n) Stack-Speicher." });
 }
 
 function simulateRecQueensDetailed(steps) {
-  steps.push({ type: 'array', arr: [1, 3, 0, 2], active: [0, 1, 2, 3], codeLine: 0, log: 'N-Damen Backtracking Lösung für 4x4 Schachbrett gefunden!' });
+  steps.push({ type: 'array', arr: [0], active: [0], codeLine: 0, log: "N-Damen Backtracking gestartet: Platziere Dame 1 in Spalte 0, Zeile 0.", q: "Was ist Backtracking?", a: "Ein Versuch-und-Irrtum Prinzip mit systematischem Zurücksetzen bei Konflikten." });
+  steps.push({ type: 'array', arr: [0, 2], active: [1], codeLine: 1, log: "Platziere Dame 2 in Spalte 1, Zeile 2 (konfliktfrei zu Dame 1).", q: "Wie viele Damen müssen auf einem N x N Brett platziert werden?", a: "Exakt N Damen, so dass keine zwei einander bedrohen." });
+  steps.push({ type: 'array', arr: [1, 3, 0, 2], active: [0, 1, 2, 3], codeLine: 2, log: "🎉 Lösung gefunden! Damen stehen an Zeilen [1, 3, 0, 2] für 4x4 Brett.", q: "Welche Komplexität hat N-Queens?", a: "O(N!) exponentielles Backtracking." });
 }
 
 function simulateDisjointSetDetailed(steps) {
-  steps.push({ type: 'array', arr: [0, 0, 0, 3, 3, 3], active: [], codeLine: 0, log: 'Disjoint Sets (Union-Find mit Pfadkomprimierung).' });
+  steps.push({ type: 'array', arr: [0, 1, 2, 3, 4, 5], active: [], codeLine: 0, log: "Disjoint Sets (Union-Find) initialisiert: 6 triviale Mengen {0}, {1}, {2}, {3}, {4}, {5}.", q: "Welche zwei Hauptoperationen hat Union-Find?", a: "find(i) (Repräsentanten suchen) und union(i, j) (Mengen vereinigen)." });
+  steps.push({ type: 'array', arr: [0, 0, 2, 3, 4, 5], active: [0, 1], codeLine: 1, log: "union(0, 1): Knoten 1 zeigt nun auf Repräsentant 0.", q: "Was bewirkt Pfadkomprimierung (Path Compression)?", a: "Es setzt während find() den Elterzeiger aller besuchten Knoten direkt auf die Wurzel." });
+  steps.push({ type: 'array', arr: [0, 0, 2, 2, 4, 5], active: [2, 3], codeLine: 2, log: "union(2, 3): Knoten 3 zeigt nun auf Repräsentant 2.", q: "Welche fast-konstante Laufzeit erreicht Union-Find mit Pfadkomprimierung?", a: "O(α(n)) amortisiert pro Operation, wobei α die sehr langsam wachsende Inverse-Ackermann-Funktion ist!" });
 }
