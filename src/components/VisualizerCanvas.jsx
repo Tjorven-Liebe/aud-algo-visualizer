@@ -106,11 +106,11 @@ function drawTreePremiumStyle(ctx, canvas, step, algoKey, nodePosMap) {
   }
 
   // If Heap, adjust tree Y offset slightly for array bar
-  const treeStartY = algoKey === 'heap' ? 105 : 80;
+  const treeStartY = (algoKey === 'heap' || algoKey === 'minheap') ? 105 : 80;
   layoutTree(root, canvas.width, treeStartY);
 
   // Galles USFCA Heap Array Representation Bar at Top
-  if (algoKey === 'heap' && step.arr && step.arr.length > 0) {
+  if ((algoKey === 'heap' || algoKey === 'minheap') && step.arr && step.arr.length > 0) {
     const arr = step.arr;
     const cellW = Math.min(46, Math.floor(640 / (arr.length + 1)));
     const cellH = 26;

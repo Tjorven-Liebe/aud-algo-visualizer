@@ -191,6 +191,18 @@ export const ALGORITHM_DATA = {
       "}"
     ]
   },
+  minheap: {
+    name: "⭐ Min-Heap (Galles USFCA Original)",
+    category: "tree",
+    isTestat: false,
+    file: "MinHeap.java",
+    code: [
+      "public void insert(int key) {",
+      "    heap.add(key); // Am Ende des Arrays anfügen",
+      "    heapifyUpMin(heap.size() - 1); // Parent <= Child",
+      "}"
+    ]
+  },
 
   // P3: GRAPHEN & NETZWERKE
   dijkstra: {
@@ -313,6 +325,8 @@ export function getDefaultData(algoKey) {
       return [40, 20, 60, 10, 30, 25];
     case 'heap':
       return [10, 20, 60, 40, 50, 30];
+    case 'minheap':
+      return [12, 31, 36, 85, 35, 73];
     case 'splay':
       return [10, 60, 20, 40];
     case 'dijkstra':
@@ -493,7 +507,9 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
   } else if (algoKey === 'bst') {
     simulateBSTDetailedIncremental(data, steps);
   } else if (algoKey === 'heap') {
-    simulateHeapDetailedIncrementalGalles(data, steps);
+    simulateHeapDetailedIncrementalGalles(data, steps, false);
+  } else if (algoKey === 'minheap') {
+    simulateHeapDetailedIncrementalGalles(data, steps, true);
   } else if (algoKey === 'dijkstra') {
     simulateDijkstraDetailed(data, steps, extraParams.startNode || 'A', extraParams.targetNode || 'F');
   } else if (algoKey === 'bellmanford') {
@@ -512,17 +528,18 @@ export function generateAlgoSteps(algoKey, data, extraParams = {}) {
 }
 
 // -----------------------------------------------------------------------
-// GALLES USFCA REAL BINARY MAX-HEAP ENGINE (Array + Binary Tree mapping)
+// GALLES USFCA REAL BINARY HEAP ENGINE (Min-Heap & Max-Heap)
 // -----------------------------------------------------------------------
-function simulateHeapDetailedIncrementalGalles(data, steps) {
+function simulateHeapDetailedIncrementalGalles(data, steps, isMinHeap = false) {
   const heapArray = [];
+  const heapName = isMinHeap ? 'Min-Heap' : 'Max-Heap';
 
   steps.push({
     type: 'tree',
     root: null,
     arr: [],
     codeLine: 0,
-    log: `Starte inkrementellen Max-Heap Aufbau (Galles USFCA & CLRS Kap. 6). Schlüssel: [${data.join(', ')}].`,
+    log: `Starte inkrementellen ${heapName} Aufbau (Galles USFCA & CLRS Kap. 6). Schlüssel: [${data.join(', ')}].`,
     q: "Wie wird ein Binärer Heap im Speicher abgelegt?",
     a: "In einem 0-basierten Array: Für Index i ist das linke Kind bei 2i+1, das rechte Kind bei 2i+2, der Vater bei (i-1)/2."
   });
@@ -537,7 +554,7 @@ function simulateHeapDetailedIncrementalGalles(data, steps) {
       arr: [...heapArray],
       highlightNode: val,
       codeLine: 1,
-      log: `📌 Inkrementeller Schritt ${idx + 1}/${data.length}: Füge Schlüssel ${val} am Ende des Heap-Arrays an Index ${currIdx} an.`,
+      log: `📌 Inkrementeller Schritt ${idx + 1}/${data.length}: Füge Schlüssel ${val} am Ende des Heap-Arrays an Index ${currIdx + 1} an.`,
       q: "Wo werden neue Elemente in einem Heap zuerst eingefügt?",
       a: "Immer am Ende der Baumstruktur (letzter Blattplatz), um die Vollständigkeit des Binärbaums einzuhalten."
     });
@@ -545,7 +562,11 @@ function simulateHeapDetailedIncrementalGalles(data, steps) {
     // Heapify-Up (Bubble Up)
     while (currIdx > 0) {
       const parentIdx = Math.floor((currIdx - 1) / 2);
-      if (heapArray[currIdx] > heapArray[parentIdx]) {
+      const isViolation = isMinHeap
+        ? heapArray[currIdx] < heapArray[parentIdx]
+        : heapArray[currIdx] > heapArray[parentIdx];
+
+      if (isViolation) {
         // Swap with parent
         const tmp = heapArray[currIdx];
         heapArray[currIdx] = heapArray[parentIdx];
@@ -557,9 +578,9 @@ function simulateHeapDetailedIncrementalGalles(data, steps) {
           arr: [...heapArray],
           highlightNode: tmp,
           codeLine: 2,
-          log: `⬆️ UP-HEAPIFY: ${tmp} > Vater ${heapArray[currIdx]} ➔ Tausche Index ${currIdx} mit Vater-Index ${parentIdx}!`,
-          q: "Was ist die Max-Heap Invariante?",
-          a: "Jeder Elternknoten muss größer oder gleich seinen Kindern sein: A[parent(i)] >= A[i]."
+          log: `⬆️ UP-HEAPIFY: ${tmp} ${isMinHeap ? '<' : '>'} Vater ${heapArray[currIdx]} ➔ Tausche Index ${currIdx + 1} mit Vater-Index ${parentIdx + 1}!`,
+          q: isMinHeap ? "Was ist die Min-Heap Invariante?" : "Was ist die Max-Heap Invariante?",
+          a: isMinHeap ? "Jeder Elternknoten ist kleiner oder gleich seinen Kindern: A[parent(i)] <= A[i]." : "Jeder Elternknoten ist größer oder gleich seinen Kindern: A[parent(i)] >= A[i]."
         });
 
         currIdx = parentIdx;

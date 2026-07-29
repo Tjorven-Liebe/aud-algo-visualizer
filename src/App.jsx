@@ -307,8 +307,9 @@ export default function App() {
                       <option value="rbtree">⭐ Red-Black Tree (4 Rules)</option>
                     </optgroup>
                     <optgroup label="📚 WEITERE CLRS LEHRBUCH-ALGORITHMEN">
-                      <option value="bst">Binärer Suchbaum (BST)</option>
+                      <option value="minheap">⭐ Min-Heap (Galles USFCA Original)</option>
                       <option value="heap">Max-Heap / PriorityQueue</option>
+                      <option value="bst">Binärer Suchbaum (BST)</option>
                     </optgroup>
                   </>
                 )}
