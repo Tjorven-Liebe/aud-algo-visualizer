@@ -785,6 +785,9 @@ function drawFloydWarshallPremiumStyle(ctx, canvas, step, rawData) {
   const nodes = step.nodes || ['A', 'B', 'C', 'D'];
   const edges = step.edges || [];
   const V = nodes.length;
+
+  const nodeMap = {};
+  nodes.forEach((n, idx) => { nodeMap[n] = idx; });
   const costMatrix = step.costMatrix || Array.from({ length: V }, () => new Array(V).fill('INF'));
   const pathMatrix = step.pathMatrix || Array.from({ length: V }, () => new Array(V).fill(-1));
 
